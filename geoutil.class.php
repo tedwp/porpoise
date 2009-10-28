@@ -7,16 +7,11 @@
  */
 
 /**
- * Geographic utilities
- *
- * @package PorPOISe
- */
-
-/**
  * Geographic utilities class
  *
  * @package PorPOISe
  */
+
 class GeoUtil {
 	// source: http://en.wikipedia.org/wiki/Great-circle_distance
 	const EARTH_RADIUS = 6371010;	// meters
