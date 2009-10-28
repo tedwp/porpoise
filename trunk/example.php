@@ -6,6 +6,12 @@
  * Released under a permissive license (see LICENSE)
  */
 
+/**
+ * Example server configuration
+ *
+ * @package PorPOISe
+ */
+
 require_once("poiserver.class.php");
 
 // layers defined in flat files
