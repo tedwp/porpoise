@@ -22,6 +22,8 @@ require_once("poi.class.php");
 require_once("layer.class.php");
 /** Requires FlatPOICollector */
 require_once("flatpoicollector.class.php");
+/** Requires FlatPOICollector */
+require_once("xmlpoicollector.class.php");
 /** Requires SQLPOICollector */
 require_once("sqlpoicollector.class.php");
 
@@ -201,7 +203,7 @@ class LayarPOIServerFactory {
 	 *
 	 * @param array $layerFiles The key of each element is expected to be the
 	 * layer's name, the value to be the filename of the file containing the
-	 * layer's POIs. Currently only text-based POI files are supported, not XML.
+	 * layer's POI in tab delimited format.
 	 *
 	 * @return LayarPOIServer
 	 */
@@ -210,6 +212,26 @@ class LayarPOIServerFactory {
 		foreach ($layerFiles as $layerName => $layerFile) {
 			$layer = new Layer($layerName, $this->developerId, $this->developerKey);
 			$poiCollector = new FlatPOICollector($layerFile);
+			$layer->setPOICollector($poiCollector);
+			$result->addLayer($layer);
+		}
+		return $result;
+	}
+
+	/**
+	 * Create a LayarPOIServer with content from a list of XML files
+	 *
+	 * @param array $layerFiles The key of each element is expected to be the
+	 * layer's name, the value to be the filename of the file containing the
+	 * layer's POIs in XML format.
+	 *
+	 * @return LayarPOIServer
+	 */
+	public function createLayarPOIServerFromXMLFiles(array $layerFiles) {
+		$result = new LayarPOIServer();
+		foreach ($layerFiles as $layerName => $layerFile) {
+			$layer = new Layer($layerName, $this->developerId, $this->developerKey);
+			$poiCollector = new XMLPOICollector($layerFile);
 			$layer->setPOICollector($poiCollector);
 			$result->addLayer($layer);
 		}
