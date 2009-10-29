@@ -19,6 +19,11 @@ $flatLayers = array(
 	"example" => "example.tab"
 );
 
+// layers defined in XML files
+$xmlLayers = array(
+	"example" => "example.xml"
+);
+
 // layars defined in a database
 $dbLayers = array(
 	"example" => array("dsn" => "mysql:dbname=example;host=localhost", "username" => "", "password" => "")
@@ -37,6 +42,7 @@ $factory = new LayarPOIServerFactory(DEVELOPER_ID, DEVELOPER_KEY);
 
 // create server
 $server = $factory->createLayarPOIServerFromFlatFiles($flatLayers);
+//$server = $factory->createLayarPOIServerFromXMLFiles($xmlLayers);
 //$server = $factory->createLayarPOIServerFromDatabase($dbLayers);
 
 // handle the request, and that's the end of it
