@@ -99,11 +99,15 @@ class LayarPOIServer {
 		$response["errorString"] = "ok";
 		$response["hotspots"] = array();
 		foreach ($pois as $poi) {
-			$response["hotspots"][] = $poi->toArray();
-			// upscale coordinate values and truncate to int because of stupid inconsistencies in Layar API
+			$i = count($response["hotspots"]);
+			$response["hotspots"][$i] = $poi->toArray();
+			// upscale coordinate values and truncate to int because of inconsistencies in Layar API
 			// (requests use floats, reponses use integers?)
-			$response["hotspots"][count($response["hotspots"]) - 1]["lat"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lat"] * 1000000);
-			$response["hotspots"][count($response["hotspots"]) - 1]["lon"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lon"] * 1000000);
+			$response["hotspots"][$i]) - 1]["lat"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lat"] * 1000000);
+			$response["hotspots"][$i]) - 1]["lon"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lon"] * 1000000);
+			// fix some types that are not strings
+			$response["hotspots"][$i]["type"] = (int)$response["hotspots"][$i]["type"];
+			$response["hotspots"][$i]["distance"] = (float)$response["hotspots"][$i]["distance"];
 		}
 
 		printf("%s", json_encode($response));
