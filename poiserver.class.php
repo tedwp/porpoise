@@ -103,8 +103,8 @@ class LayarPOIServer {
 			$response["hotspots"][$i] = $poi->toArray();
 			// upscale coordinate values and truncate to int because of inconsistencies in Layar API
 			// (requests use floats, reponses use integers?)
-			$response["hotspots"][$i]) - 1]["lat"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lat"] * 1000000);
-			$response["hotspots"][$i]) - 1]["lon"] = (int)($response["hotspots"][count($response["hotspots"]) - 1]["lon"] * 1000000);
+			$response["hotspots"][$i]["lat"] = (int)($response["hotspots"][$i]["lat"] * 1000000);
+			$response["hotspots"][$i]["lon"] = (int)($response["hotspots"][$i]["lon"] * 1000000);
 			// fix some types that are not strings
 			$response["hotspots"][$i]["type"] = (int)$response["hotspots"][$i]["type"];
 			$response["hotspots"][$i]["distance"] = (float)$response["hotspots"][$i]["distance"];
