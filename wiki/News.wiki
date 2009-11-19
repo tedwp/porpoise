@@ -1,0 +1,9 @@
+#summary Overview of newsworthy occurences regarding PorPOISe and Layar
+#labels Featured
+
+=News=
+
+  * November 06, 2009: The [http://www.kew.org/ Royal Botanic Gardens of Kew] have published a layer based on PorPOISe.
+  * November 05, 2009: Verson 0.2a of PorPOISe fixes a bug where the "type" field in a hotspot reponse had the wrong data type. There are no functional changes in this release from 0.2.
+  * October 28, 2009: Version 0.2 of PorPOISe is now available. You can now use XML files as data sources as well as plain text files and SQL databases.
+  * October 28, 2009: Version 0.1 of PorPOISe is the first public release.
