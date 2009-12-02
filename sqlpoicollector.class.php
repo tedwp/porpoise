@@ -4,6 +4,9 @@
  * PorPOISe
  * Copyright 2009 SURFnet BV
  * Released under a permissive license (see LICENSE)
+ *
+ * Acknowledgments:
+ * Jerouris for the UTF-8 fix
  */
 
 /**
@@ -39,6 +42,8 @@ class SQLPOICollector implements POICollector {
 	protected $username;
 	/** @var password */
 	protected $password;
+	/** @var PDO PDO instance */
+	protected $pdo;
 
 	/**
 	 * Constructor
@@ -57,6 +62,29 @@ class SQLPOICollector implements POICollector {
 	}
 
 	/**
+	 * Get PDO instance
+	 *
+	 * @return PDO
+	 */
+	protected function getPDO() {
+		if (empty($this->pdo)) {
+			$this->pdo = new PDO ($this->source, $this->username, $this->password);
+			// force UTF-8 (Layar talks UTF-8 and nothing else)
+			try {
+				$driverName = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+				if ($driverName == "mysql") {
+					$sql = "SET NAMES 'utf8'";
+					$stmt = $this->pdo->prepare($sql);
+					$stmt->execute();
+				}
+			} catch (PDOException $e) {
+				// driver doesn't support getAttribute
+			}
+		}
+		return $this->pdo;
+	}
+
+	/**
 	 * Get POIs
 	 *
 	 * @param float $lat
@@ -71,7 +99,7 @@ class SQLPOICollector implements POICollector {
 	 */
 	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
 		try {
-			$pdo = new PDO($this->source, $this->username, $this->password);
+			$pdo = $this->getPDO();
 			$sql = "SELECT *, " . GeoUtil::EARTH_RADIUS . " * 2 * asin(
 				sqrt(
 					pow(sin((radians(" . addslashes($lat) . ") - radians(lat)) / 2), 2)

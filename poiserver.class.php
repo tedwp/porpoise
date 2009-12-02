@@ -4,14 +4,17 @@
  * PorPOISe
  * Copyright 2009 SURFnet BV
  * Released under a permissive license (see LICENSE)
+ *
+ * Acknowledgments:
+ * Robert Harm for the "Increase range" error message
  */
 
 /**
  * POI Server for Layar
  *
  * The server consists of a server class whose objects serve Layar responses when
- * properly configured, a factory class that helps you create a properly
- * configured server and a bit of code to bootstrap the factory.
+ * properly configured and a factory class that helps you create a properly
+ * configured server.
  *
  * @package PorPOISe
  */
@@ -33,11 +36,23 @@ require_once("sqlpoicollector.class.php");
  * @package PorPOISe
  */
 class LayarPOIServer {
+	/** Default error code */
+	const ERROR_CODE_DEFAULT = 20;
+	/** Request has no POIs in result */
+	const ERROR_CODE_NO_POIS = 21;
+
+	/** @var string[] Error messages stored in an array because class constants cannot be arrays */
+	protected static $ERROR_MESSAGES = array(
+		self::ERROR_CODE_DEFAULT => "An error occurred"
+		, self::ERROR_CODE_NO_POIS => "No POIs nearby. Increase range to see POIs"
+	);
+
 	// layers in this server
 	protected $layers = array();
 
 	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon", "accuracy", "radius");
-	protected $optionalFields = array("RADIOLIST", "SEARCHBOX", "CUSTOM_SLIDER", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature");
+	protected $optionalFields = array("RADIOLIST", "SEARCHBOX", "CUSTOM_SLIDER", "pageKey", "oath_consumer_key", "oauth_signature_method",
+		"oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature");
 
 	/**
 	 * Add a layer to the server
@@ -68,6 +83,10 @@ class LayarPOIServer {
 			$layer = $this->layers[$_REQUEST["layerName"]];
 			$layer->determineNearbyPOIs($_REQUEST["lat"], $_REQUEST["lon"], $_REQUEST["radius"], $_REQUEST["accuracy"], $options);
 			$pois = $layer->getNearbyPOIs();
+			if (count($pois) == 0) {
+				$this->sendErrorReponse(self::ERROR_CODE_NO_POIS);
+				return;
+			}
 			$morePages = $layer->hasMorePOIs();
 			if ($morePages) {
 				$nextPageKey = $layer->getNextPageKey();
@@ -77,7 +96,7 @@ class LayarPOIServer {
 		
 			$this->sendResponse($pois, $morePages, $nextPageKey);
 		} catch (Exception $e) {
-			$this->sendErrorResponse($e->getMessage());
+			$this->sendErrorResponse(self::ERROR_CODE_DEFAULT, $e->getMessage());
 		}
 	}
 
@@ -116,20 +135,27 @@ class LayarPOIServer {
 	/**
 	 * Send an error response
 	 *
+	 * @param int $code Error code for this error
 	 * @param string $msg A message detailing what went wrong
 	 *
 	 * @return void
 	 */
-	protected function sendErrorResponse($msg) {
+	protected function sendErrorResponse($code = self::ERROR_CODE_DEFAULT, $msg = NULL) {
 		$response = array();
 		if (isset($_REQUEST["layerName"])) {
 			$response["layer"] = $_REQUEST["layerName"];
 		} else {
 			$response["layer"] = "unspecified";
 		}
-		$response["errorCode"] = 20;
-		$response["errorString"] = $msg;
+		$response["errorCode"] = $code;
+		if (!empty($msg)) {
+			$response["errorString"] = $msg;
+		} else {
+			$response["errorString"] = self::$ERROR_MESSAGES[$code];
+		}
 		$response["hotspots"] = array();
+		$response["nextPageKey"] = NULL;
+		$response["morePages"] = FALSE;
 
 		printf("%s", json_encode($response));
 	}
@@ -229,13 +255,17 @@ class LayarPOIServerFactory {
 	 * layer's name, the value to be the filename of the file containing the
 	 * layer's POIs in XML format.
 	 *
+	 * @param string[] $layerFiles
+	 * @param string $layerXSL
+	 *
 	 * @return LayarPOIServer
 	 */
-	public function createLayarPOIServerFromXMLFiles(array $layerFiles) {
+	public function createLayarPOIServerFromXMLFiles(array $layerFiles, $layerXSL = "") {
 		$result = new LayarPOIServer();
 		foreach ($layerFiles as $layerName => $layerFile) {
 			$layer = new Layer($layerName, $this->developerId, $this->developerKey);
 			$poiCollector = new XMLPOICollector($layerFile);
+			$poiCollector->setStyleSheet($layerXSL);
 			$layer->setPOICollector($poiCollector);
 			$result->addLayer($layer);
 		}
