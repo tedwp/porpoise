@@ -3,7 +3,7 @@
 
 =News=
   * December 02, 2009: Released PorPOISe 0.3. This release adds support for XSLT transformation to the XMLPOICollector (use the "setStyleSheet" method) and better handling of UTF-8 data through the SQLPOICollector by forcing MySQL to use UTF-8. This should fix problems with diacritic characters. Thanks to all contributors for posting your modifications in the Google Group.
-  * November 26, 2009: Created a [http://groups.google.com/group/porpoise|Google Group] for PorPOISe to discuss bugs and additions.
+  * November 26, 2009: Created a [http://groups.google.com/group/porpoise Google Group] for PorPOISe to discuss bugs and additions.
   * November 06, 2009: The [http://www.kew.org/ Royal Botanic Gardens of Kew] have published a layer based on PorPOISe.
   * November 05, 2009: Verson 0.2a of PorPOISe fixes a bug where the "type" field in a hotspot reponse had the wrong data type. There are no functional changes in this release from 0.2.
   * October 28, 2009: Version 0.2 of PorPOISe is now available. You can now use XML files as data sources as well as plain text files and SQL databases.
