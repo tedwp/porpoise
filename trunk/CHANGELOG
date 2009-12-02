@@ -1,0 +1,13 @@
+= Release 0.3 =
+- Added support for XSL style sheets
+- Added better UTF-8 handling for databases
+
+= Release 0.2a =
+- Bug fix: "type" was formatted as a string in the JSON response, but should
+  have been int. Fixed now
+
+= Release 0.2 =
+- Added XML support
+
+= Release 0.1 =
+- Initial release
