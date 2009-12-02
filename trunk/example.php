@@ -12,6 +12,9 @@
  * @package PorPOISe
  */
 
+/**
+ * Required
+ */
 require_once("poiserver.class.php");
 
 // layers defined in flat files

@@ -4,6 +4,9 @@
  * PorPOISe
  * Copyright 2009 SURFnet BV
  * Released under a permissive license (see LICENSE)
+ *
+ * Acknowledgments:
+ * Guillaume Danielou of kew.org for the XSL transformation
  */
 
 /**
@@ -34,6 +37,8 @@ require_once("geoutil.class.php");
 class XMLPOICollector implements POICollector {
 	/** @var string */
 	protected $source;
+	/** @var string */
+	protected $styleSheetPath = "";
 
 	/**
 	 * Constructor
@@ -45,6 +50,16 @@ class XMLPOICollector implements POICollector {
 	 */
 	public function __construct($source) {
 		$this->source = $source;
+	}
+
+	/**
+	 * Set the path of an XSL style sheet to transform the input XML
+	 *
+	 * @param string $styleSheetPath
+	 * @return void
+	 */
+	public function setStyleSheet($styleSheetPath) {
+		$this->styleSheetPath = $styleSheetPath;
 	}
 
 	/**
@@ -63,9 +78,13 @@ class XMLPOICollector implements POICollector {
 	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
 
-		$xml = new SimpleXMLElement($this->source, 0, TRUE);
+		if(!empty($this->styleSheetPath)) {
+			$xml = new SimpleXMLElement($this->transformXML(), 0, FALSE);
+		} else {
+			$xml = new SimpleXMLElement($this->source, 0, TRUE);
+		}
 		if (empty($xml)) {
-			throw new Exception("Failed to load data file");
+			throw new Exception("Failed to load data");
 		}
 
 		$result = array();
@@ -93,5 +112,24 @@ class XMLPOICollector implements POICollector {
 		libxml_use_internal_errors($libxmlErrorHandlingState);
 
 		return $result;
+	}
+
+	/**
+	 * Transform the input source using the set XSL stylesheet
+	 *
+	 * @return string The resulting XML
+	 */
+	public function transformXML() {
+		$xslProcessor = new XSLTProcessor();
+		$xsl = new DOMDocument();    
+		if ($xsl->load($this->styleSheetPath) == FALSE) {
+			throw new Exception("transformXML - Failed to load stylesheet");
+		}
+		$xslProcessor->importStyleSheet($xsl);   
+		$xml = new DOMDocument();
+		if ($xml->load($this->source) == FALSE) {
+			throw new Exception("transformXML - Failed to load xml");
+		}
+		return $xslProcessor->transformToXml($xml);
 	}
 }
