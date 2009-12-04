@@ -35,6 +35,7 @@ require_once("geoutil.class.php");
  * @package PorPOISe
  */
 class XMLPOICollector implements POICollector {
+	const EMPTY_DOCUMENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<pois/>";
 	/** @var string */
 	protected $source;
 	/** @var string */
@@ -79,38 +80,215 @@ class XMLPOICollector implements POICollector {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
 
 		if(!empty($this->styleSheetPath)) {
-			$xml = new SimpleXMLElement($this->transformXML(), 0, FALSE);
+			$simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
 		} else {
-			$xml = new SimpleXMLElement($this->source, 0, TRUE);
+			$simpleXML = new SimpleXMLElement($this->source, 0, TRUE);
 		}
-		if (empty($xml)) {
+		if (empty($simpleXML)) {
 			throw new Exception("Failed to load data");
 		}
 
 		$result = array();
 
-		foreach ($xml->poi as $poiData) {
-			$poi = new POI();
+		foreach ($simpleXML->poi as $poiData) {
+			if (empty($poiData->dimension) || (int)$poiData->dimension == 1) {
+				$poi = new POI1D();
+			} else if ((int)$poiData->dimension == 2) {
+				$poi = new POI2D();
+			} else if ((int)$poiData->dimension == 3) {
+				$poi = new POI3D();
+			} else {
+				throw new Exception("Invalid dimension: " . (string)$poiData->dimension);
+			}
 			foreach ($poiData->children() as $child) {
 				$nodeName = $child->getName();
 				if ($nodeName == "action") {
 					$action = new POIAction();
 					$action->uri = (string)$child->uri;
 					$action->label = (string)$child->label;
+					if (!empty($child->autoTriggerRange)) {
+						$action->autoTriggerRange = (int)$child->autoTriggerRange;
+						$action->autoTriggerOnly = (bool)$child->autoTriggerOnly;
+					}
 					$poi->actions[] = $action;
+				} else if ($nodeName == "object") {
+					$poi->object = new POIObject($child);
+				} else if ($nodeName == "transform") {
+					$poi->transform = new POITransform($child);
 				} else {
-					$poi->$nodeName = (string)$child;
+					switch($nodeName) {
+					case "dimension":
+					case "type":
+					case "alt":
+					case "relativeAlt":
+						$value = (int)$child;
+						break;
+					case "lat":
+					case "lon":
+						$value = (float)$child;
+						break;
+					default:
+						$value = (string)$child;
+						break;
+					}
+					$poi->$nodeName = $value;
 				}
 			}
 
 			$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-			if ($poi->distance < $radius + $accuracy) {
+			/* new in Layar 3: flexible radius */
+			if (empty($radius) || $poi->distance < $radius + $accuracy) {
 				$result[] = $poi;
 			}
 		}
 
 		libxml_use_internal_errors($libxmlErrorHandlingState);
 
+		return $result;
+	}
+
+	/**
+	 * Store POIs
+	 *
+	 * Builds up an XML and writes it to the source file with which this
+	 * XMLPOICollector was created. Note that there is no way to do
+	 * "reverse XSL" so any stylesheet is ignored and native PorPOISe XML
+	 * is written to the source file. If this file is not writable, this
+	 * method will return FALSE.
+	 *
+	 * @param POI[] $pois
+	 * @param string $mode "update" or "replace"
+	 * @param bool $asString Return XML as string instead of writing it to file
+	 * @return mixed FALSE on failure, TRUE or a string on success
+	 */
+	public function storePOIs(array $pois, $mode = "update", $asString = FALSE) {
+		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
+
+		// keep track of the highest id
+		$maxID = 0;
+
+		// initialize result XML
+		if ($mode == "update") {
+			$simpleXML = new SimpleXMLElement($this->source, 0, TRUE);
+			if (empty($simpleXML)) {
+				throw new Exception("Failed to load data file");
+			}
+			// look for highest id in current set
+			$idNodes = $simpleXML->xpath("//poi/id");
+			foreach ($idNodes as $idNode) {
+				$id = (int)$idNode;
+				if ($id > $maxID) {
+					$maxID = $id;
+				}
+			}
+		} else if ($mode == "replace") {
+			$simpleXML = new SimpleXMLElement(self::EMPTY_DOCUMENT);
+			// $maxID stays at 0 for now
+		}
+		$domXML = dom_import_simplexml($simpleXML);
+		// look for high id in new set, see if it's higher than $maxID
+		foreach ($pois as $poi) {
+			if ($poi->id > $maxID) {
+				$maxID = $poi->id;
+			}
+		}
+		
+		// add POIs to result
+		foreach($pois as $poi) {
+			// see if POI is old or new
+			if (empty($poi->id)) {
+				// assign new id
+				$poi->id = $maxID + 1;
+				$maxID = $poi->id;
+				$oldSimpleXMLElements = array();
+			} else {
+				// look for existing POI with this id
+				$oldSimpleXMLElements = $simpleXML->xpath("//poi[id=" . $poi->id . "]");
+			}
+			// build element and convert to DOM
+			//$simpleXMLElement = self::arrayToSimpleXMLElement("poi", $poi->toArray());
+			$simpleXMLElement = new SimpleXMLElement(self::poiToSimpleXMLElement($poi));
+			$domElement = $domXML->ownerDocument->importNode(dom_import_simplexml($simpleXMLElement), TRUE);
+			if (empty($oldSimpleXMLElements)) {
+				$domXML->appendChild($domElement);
+			} else {
+				$domXML->replaceChild($domElement, dom_import_simplexml($oldSimpleXMLElements[0]));
+			}				
+		}
+
+		if ($asString) {
+			return $simpleXML->asXML();
+		} else {
+			// write new dataset to file
+			return $simpleXML->asXML($this->source);
+		}
+
+		libxml_use_internal_errors($libxmlErrorHandlingState);
+	}
+
+	/**
+	 * Convert an array to a SimpleXMLElement
+	 *
+	 * Converts $array to a SimpleXMLElement by mapping they array's keys
+	 * to node names and values to values. Traverses sub-arrays.
+	 *
+	 * @param string $rootName The name of the root element
+	 * @param array $array The array to convert
+	 * @return SimpleXMLElement
+	 */
+	public static function arrayToSimpleXMLElement($rootName, array $array) {
+		$result = new SimpleXMLElement(sprintf("<%s/>", $rootName));
+		self::addArrayToSimpleXMLElement($result, $array);
+		return $result;
+	}
+
+	/**
+	 * Recursive helper method for arrayToSimpleXMLElement
+	 *
+	 * @param SimpleXMLElement $element
+	 * @param array $array
+	 *
+	 * @return void
+	 */
+	public static function addArrayToSimpleXMLElement(SimpleXMLElement $element, array $array) {
+		foreach ($array as $key => $value) {
+			if (is_array($value)) {
+				$child = $element->addChild($key);
+				self::addArrayToSimpleXMLElement($child, $value);
+			} else {
+				$element->addChild($key, $value);
+			}
+		}
+	}
+
+	/**
+	 * Create an XML string representation of a POI
+	 *
+	 * @param POI $poi
+	 * @return string
+	 */
+	public static function poiToSimpleXMLElement(POI $poi) {
+		$result = "<?xml version=\"1.0\"?>\n";
+		$result .= "<poi>\n";
+		foreach ($poi as $key => $value) {
+			if ($key == "actions") {
+				foreach ($value as $action) {
+					$result .= sprintf("<action>");
+					$result .= sprintf("<uri>%s</uri><label>%s</label>", $action->uri, $action->label);
+					if (!empty($action->autoTriggerRange)) {
+						$result .= sprintf("<autoTriggerRange>%s</autoTriggerRange><autoTriggerOnly>%s</autoTriggerOnly>", $action->autoTriggerRange, $action->autoTriggerOnly);
+					}
+					$result .= sprintf("</action>\n");
+				}
+			} else if ($key == "transform") {
+				$result .= sprintf("<transform><rel>%s</rel><angle>%s</angle><scale>%s</scale></transform>\n", $value->rel, $value->angle, $value->scale);
+			} else if ($key == "object") {
+				$result .= sprintf("<object><baseURL>%s</baseURL><full>%s</full><reduced>%s</reduced><icon>%d</icon><size>%s</size></object>\n", $value->baseURL, $value->full, $value->reduced, $value->icon, $value->size);
+			} else {
+				$result .= sprintf("<%s>%s</%s>\n", $key, $value, $key);
+			}
+		}
+		$result .= "</poi>";
 		return $result;
 	}
 
