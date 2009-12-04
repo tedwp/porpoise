@@ -36,9 +36,9 @@ require_once("sqlpoicollector.class.php");
  * @package PorPOISe
  */
 class LayarPOIServer {
-	/** Default error code */
+	/** @const int Default error code */
 	const ERROR_CODE_DEFAULT = 20;
-	/** Request has no POIs in result */
+	/** @const int Request has no POIs in result */
 	const ERROR_CODE_NO_POIS = 21;
 
 	/** @var string[] Error messages stored in an array because class constants cannot be arrays */
@@ -50,9 +50,8 @@ class LayarPOIServer {
 	// layers in this server
 	protected $layers = array();
 
-	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon", "accuracy", "radius");
-	protected $optionalFields = array("RADIOLIST", "SEARCHBOX", "CUSTOM_SLIDER", "pageKey", "oath_consumer_key", "oauth_signature_method",
-		"oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature");
+	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon", "accuracy");
+	protected $optionalFields = array("RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
 
 	/**
 	 * Add a layer to the server
@@ -297,6 +296,47 @@ class LayarPOIServerFactory {
 			$result->addLayer($layer);
 		}
 
+		return $result;
+	}
+
+	/**
+	 * Create a server based on SimpleXML configuration directives
+	 *
+	 * $config is an array of SimpleXMLElements, each element should contain
+	 * layer nodes specifying collector (class name), layer name and data source.
+	 * The root node name is not important but "layers" is suggested.
+	 * For flat files and XML, use a URI as source. For SQL, use dsn, username
+	 * and password elements.
+	 * Example:
+	 * <layers>
+	 *  <layer>
+	 *   <collector>SQLPOICollector</collector>
+	 *   <name>test</name>
+	 *   <source>
+	 *    <dsn>mysql:host=localhost</dsn>
+	 *    <username>default</username>
+	 *    <password>password</password>
+	 *   </source>
+	 *  </layer>
+	 * </layers>
+	 *
+	 * @param SimpleXMLElement $config
+	 *
+	 * @return LayarPOIServer
+	 */
+	public function createLayarPOIServerFromSimpleXMLConfig(SimpleXMLElement $config) {
+		$result = new LayarPOIServer();
+		foreach ($config->xpath("layer") as $child) {
+			$layer = new Layer((string)$child->name, $this->developerId, $this->developerKey);
+			if ((string)$child->collector == "SQLPOICollector") {
+				$poiCollector = new SQLPOICollector((string)$child->source->dsn, (string)$child->source->username, (string)$child->source->password);
+			} else {
+				$collectorName = (string)$child->collector;
+				$poiCollector = new $collectorName((string)$child->source);
+			}
+			$layer->setPOICollector($poiCollector);
+			$result->addLayer($layer);
+		}
 		return $result;
 	}
 }

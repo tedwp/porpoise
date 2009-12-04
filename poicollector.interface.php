@@ -17,7 +17,8 @@
  *
  * A POI collector is in charge of getting POIs from a specified source.
  * Each specific POI collector should be able to open (connect to) the
- * specified source and get POI information from it somehow.
+ * specified source and get POI information from it somehow. A POICollector
+ * is also in charge of storing POIs in the same format at the same source.
  *
  * @package PorPOISe
  */
@@ -49,4 +50,15 @@ interface POICollector {
 	 * @throws Exception
 	 */
 	public function getPOIs($lat, $lon, $radius, $accuracy, $options);
+
+	/**
+	 * Store POIs
+	 *
+	 * Store a set of POIs
+	 *
+	 * @param POI[] $pois POIs to store
+	 * @param string $mode "replace" to replace the current set, "update" to update current set (default)
+	 * @return void
+	 */
+	//public function storePOIs(array $pois, $mode = "update");
 }
