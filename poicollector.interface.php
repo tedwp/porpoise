@@ -60,5 +60,5 @@ interface POICollector {
 	 * @param string $mode "replace" to replace the current set, "update" to update current set (default)
 	 * @return void
 	 */
-	//public function storePOIs(array $pois, $mode = "update");
+	public function storePOIs(array $pois, $mode = "update");
 }

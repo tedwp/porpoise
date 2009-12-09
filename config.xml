@@ -9,7 +9,7 @@
    <collector>XMLPOICollector</collector>
    <source>example.xml</source>
   </layer>
-  <layer>
+<!--  <layer>
    <name>example</name>
    <collector>SQLPOICollector</collector>
    <source>
@@ -17,6 +17,6 @@
     <username/>
     <password/>
    </source>
-	</layer>
+	</layer>-->
  </layers>
 </porpoise-configuration>

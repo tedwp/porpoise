@@ -1,0 +1,3 @@
+table { border-collapse: collapse; empty-cells: show; }
+th, td { padding: 2pt; border: 1px solid black; }
+.error { color: red; }

@@ -25,7 +25,7 @@ chdir("..");
 /**
  * Include PorPOISe
  */
-require_once("poiserver.class.php");
+require_once("porpoise.inc.php");
 
 /* start of server*/
 
@@ -34,21 +34,13 @@ error_reporting(E_ALL | E_STRICT);
 
 /* open config file */
 try {
-	$config = new SimpleXMLElement("config.xml", 0, TRUE);
-	$developerID = (string)$config->{"developer-id"};
-	$developerKey = (string)$config->{"developer-key"};
+	$config = new PorPOISeConfig("config.xml");
 } catch (Exception $e) {
 	printf("Error loading configuration: %s", $e->getMessage());
 }
 
-/* Set the proper content type */
-header("Content-Type: text/javascript");
-
-/* initialize server factory */
-$factory = new LayarPOIServerFactory($developerID, $developerKey);
-
 /* create server */
-$server = $factory->createLayarPOIServerFromSimpleXMLConfig($config->layers);
+$server = LayarPOIServerFactory::createLayarPOIServer($config);
 
 /* handle the request, and that's the end of it */
 $server->handleRequest();
