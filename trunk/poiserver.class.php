@@ -83,7 +83,7 @@ class LayarPOIServer {
 			$layer->determineNearbyPOIs($_REQUEST["lat"], $_REQUEST["lon"], $_REQUEST["radius"], $_REQUEST["accuracy"], $options);
 			$pois = $layer->getNearbyPOIs();
 			if (count($pois) == 0) {
-				$this->sendErrorReponse(self::ERROR_CODE_NO_POIS);
+				$this->sendErrorResponse(self::ERROR_CODE_NO_POIS);
 				return;
 			}
 			$morePages = $layer->hasMorePOIs();
@@ -120,13 +120,16 @@ class LayarPOIServer {
 			$i = count($response["hotspots"]);
 			$response["hotspots"][$i] = $poi->toArray();
 			// upscale coordinate values and truncate to int because of inconsistencies in Layar API
-			// (requests use floats, reponses use integers?)
+			// (requests use floats, responses use integers?)
 			$response["hotspots"][$i]["lat"] = (int)($response["hotspots"][$i]["lat"] * 1000000);
 			$response["hotspots"][$i]["lon"] = (int)($response["hotspots"][$i]["lon"] * 1000000);
 			// fix some types that are not strings
 			$response["hotspots"][$i]["type"] = (int)$response["hotspots"][$i]["type"];
 			$response["hotspots"][$i]["distance"] = (float)$response["hotspots"][$i]["distance"];
 		}
+
+		/* Set the proper content type */
+		header("Content-Type: text/javascript");
 
 		printf("%s", json_encode($response));
 	}
@@ -155,6 +158,9 @@ class LayarPOIServer {
 		$response["hotspots"] = array();
 		$response["nextPageKey"] = NULL;
 		$response["morePages"] = FALSE;
+
+		/* Set the proper content type */
+		header("Content-Type: text/javascript");
 
 		printf("%s", json_encode($response));
 	}
@@ -338,6 +344,38 @@ class LayarPOIServerFactory {
 			$result->addLayer($layer);
 		}
 		return $result;
+	}
+
+	/**
+	 * Create a server from an array of LayerDefinitions
+	 *
+	 * @param LayerDefinition[] $definitions
+	 * @return LayarPOIServer
+	 */
+	public function createLayarPOIServerFromLayerDefinitions(array $definitions) {
+		$result = new LayarPOIServer();
+		foreach ($definitions as $definition) {
+			$layer = new Layer($definition->name, $this->developerId, $this->developerKey);
+			if ($definition->getSourceType() == LayerDefinition::DSN) {
+				$poiCollector = new $definition->collector($definition->source["dsn"], $definition->source["username"], $definition->source["password"]);
+			} else {
+				$poiCollector = new $definition->collector($definition->source);
+			}
+			$layer->setPOICollector($poiCollector);
+			$result->addLayer($layer);
+		}
+		return $result;
+	}
+
+	/**
+	 * Create a server from a PorPOISeConfig object
+	 *
+	 * @param PorPOISeConfig $config
+	 * @return LayarPOIServer
+	 */
+	public static function createLayarPOIServer(PorPOISeConfig $config) {
+		$factory = new self($config->developerID, $config->developerKey);
+		return $factory->createLayarPOIServerFromLayerDefinitions($config->layerDefinitions);
 	}
 }
 
