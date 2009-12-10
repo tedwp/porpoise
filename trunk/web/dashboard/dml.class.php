@@ -41,24 +41,44 @@ class DML {
 	 * @return POI[] FALSE if the layer is unknown
 	 */
 	static public function getPOIs($layerName) {
-		$config = self::getConfiguration();
-		foreach ($config->layerDefinitions as $layerDefinition) {
-			if ($layerDefinition->name == $layerName) {
-				switch($layerDefinition->getSourceType()) {
-				case LayerDefinition::DSN:
-					$poiCollector = new $layerDefinition->collector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition["password"]);
-					break;
-				case LayerDefinition::FILE:
-					$poiCollector = new $layerDefinition->collector($layerDefinition->source);
-					break;
-				default:
-					throw new Exception(sprintf("Invalid source type: %d", $layerDefinition->getSourceType()));
-				}
-				return $poiCollector->getPOIs(0,0,0,0,array());
+		$layerDefinition = self::getLayerDefinitionByLayerName($layerName);
+		if ($layerDefinition == NULL) {
+			return FALSE;
+		}
+		switch($layerDefinition->getSourceType()) {
+		case LayerDefinition::DSN:
+			$poiCollector = new $layerDefinition->collector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition["password"]);
+			break;
+		case LayerDefinition::FILE:
+			$poiCollector = new $layerDefinition->collector($layerDefinition->source);
+			break;
+		default:
+			throw new Exception(sprintf("Invalid source type: %d", $layerDefinition->getSourceType()));
+		}
+		return $poiCollector->getPOIs(0,0,0,0,array());
+	}
+
+	/**
+	 * Get a single POI
+	 *
+	 * @param string $layerName The layer
+	 * @param string $poiID The POI to look for
+	 *
+	 * @return POI
+	 *
+	 * @todo Rewrite as soon as POICollectors support getPOI
+	 */
+	static public function getPOI($layerName, $poiID) {
+		$pois = self::getPOIs($layerName);
+		if (empty($pois)) {
+			return NULL;
+		}
+		foreach ($pois as $poi) {
+			if ($poi->id == $poiID) {
+				return $poi;
 			}
 		}
-
-		return FALSE;
+		return NULL;
 	}
 
 	/**
@@ -74,5 +94,22 @@ class DML {
 			return FALSE;
 		}
 		return ($GLOBALS["_access"][$username] === crypt($password, $GLOBALS["_access"][$username]));
+	}
+
+	/**
+	 * Get a LayerDefinition from the configuration
+	 *
+	 * @param string $layerName
+	 *
+	 * @return LayerDefinition or NULL if the layer was not found
+	 */
+	public static function getLayerDefinitionByLayerName($layerName) {
+		$config = self::getConfiguration();
+		foreach ($config->layerDefinitions as $layerDefinition) {
+			if ($layerDefinition->name == $layerName) {
+				return $layerDefinition;
+			}
+		}
+		return NULL;
 	}
 }

@@ -44,3 +44,7 @@ div.menu a:hover, div.menu a:active {
 div.menu a:active {
 	border: 2px inset;
 }
+
+form table caption {
+	caption-side: bottom;
+}
