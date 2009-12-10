@@ -35,6 +35,13 @@ try {
 	case "layer":
 		GUI::printMessage("%s", GUI::createLayerScreen($_REQUEST["layerName"]));
 		break;
+	case "poi":
+		$poi = DML::getPOI($_REQUEST["layerName"], $_REQUEST["poiID"]);
+		if (empty($poi)) {
+			throw new Exception(sprintf("POI not found: %s:%s", $_REQUEST["layerName"], $_REQUEST["poiID"]));
+		}
+		GUI::printMessage("%s", GUI::createPOIScreen($_REQUEST["layerName"], $poi));
+		break;
 	default:
 		throw new Exception(sprintf("Invalid action: %s", $_action));
 	}
