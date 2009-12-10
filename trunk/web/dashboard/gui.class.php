@@ -25,6 +25,9 @@ ob_start(array("GUI", "finalize"));
  * @subpackage Dashboard
  */
 class GUI {
+	/** controls whether the GUI displays developer key */
+	const SHOW_DEVELOPER_KEY = TRUE;
+
 	/**
 	 * Callback for ob_start()
 	 *
@@ -82,12 +85,21 @@ class GUI {
 	 */
 	public static function createHeader() {
 		return
-"<html>
+<<<HTML
+<html>
 <head>
 <title>PorPOISe POI Management Interface</title>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\">
+<link rel="stylesheet" type="text/css" href="styles.css">
 </head>
-<body>";
+<body>
+
+<div class="menu">
+ <a href="?logout=true">Log out</a>
+ <a href="?action=main">Home</a>
+</div>
+
+<div class="main">
+HTML;
 	}
 
 	/**
@@ -96,7 +108,12 @@ class GUI {
 	 * @return string
 	 */
 	public static function createFooter() {
-		return "</body>\n</html>";
+		return
+<<<HTML
+</div> <!-- end main div -->
+</body>
+</html>
+HTML;
 	}
 
 	/**
@@ -108,6 +125,7 @@ class GUI {
 		$result = "";
 		$result .= "<p>Welcome to PorPOISe</p>\n";
 		$result .= self::createMainConfigurationTable();
+		$result .= "<p>Layers:</p>\n";
 		$result .= self::createLayerList();
 		return $result;
 	}
@@ -122,7 +140,7 @@ class GUI {
 		$result = "";
 		$result .= "<table>\n";
 		$result .= sprintf("<tr><td>Developer ID</td><td>%s</td></tr>\n", $config->developerID);
-		$result .= sprintf("<tr><td>Developer key</td><td>%s</td></tr>\n", $config->developerKey);
+		$result .= sprintf("<tr><td>Developer key</td><td>%s</td></tr>\n", (self::SHOW_DEVELOPER_KEY ? $config->developerKey : "&lt;hidden&gt;"));
 		$result .= sprintf("</table>\n");
 		return $result;
 	}
@@ -137,7 +155,7 @@ class GUI {
 		$result = "";
 		$result .= "<ul>\n";
 		foreach ($config->layerDefinitions as $layerDefinition) {
-			$result .= sprintf("<li><a href=\"%s?action=viewLayer&layerName=%s\">%s</a></li>\n", $_SERVER["PHP_SELF"], $layerDefinition->name, $layerDefinition->name);
+			$result .= sprintf("<li><a href=\"%s?action=layer&layerName=%s\">%s</a></li>\n", $_SERVER["PHP_SELF"], $layerDefinition->name, $layerDefinition->name);
 		}
 		$result .= "</ul>\n";
 		return $result;
@@ -174,11 +192,44 @@ class GUI {
 		$result .= "<tr><th>Title</th><th>Lat/lon</th></tr>\n";
 		foreach ($pois as $poi) {
 			$result .= "<tr>\n";
-			$result .= sprintf("<td><a href=\"%s?action=viewPOI\">%s</a></td>\n", $_SERVER["PHP_SELF"], $poi->title);
+			$result .= sprintf("<td><a href=\"%s?action=poi\">%s</a></td>\n", $_SERVER["PHP_SELF"], $poi->title);
 			$result .= sprintf("<td>%s,%s</td>\n", $poi->lat, $poi->lon);
 			$result .= "</tr>\n";
 		}
 		$result .= "</table>\n";
+		return $result;
+	}
+
+	/**
+	 * Create login screen
+	 *
+	 * @return string
+	 */
+	public static function createLoginScreen() {
+		$result = "";
+		/* preserve GET parameters */
+		$get = $_GET;
+		unset($get["username"]);
+		unset($get["password"]);
+		unset($get["logout"]);
+		$getString = "";
+		$first = TRUE;
+		foreach ($get as $key => $value) {
+			if ($first) {
+				$first = FALSE;
+				$getString .= "?";
+			} else {
+				$getString .= "&";
+			}
+			$getString .= urlencode($key) . "=" . urlencode($value);
+		}
+		$result .= sprintf("<form method=\"POST\" action=\"%s%s\">\n", $_SERVER["PHP_SELF"], $getString);
+		$result .= "<table>\n";
+		$result .= "<tr><td>Username</td><td><input type=\"text\" name=\"username\" size=\"15\"></td></tr>\n";
+		$result .= "<tr><td>Password</td><td><input type=\"password\" name=\"password\" size=\"15\"></td></tr>\n";
+		$result .= "<tr><td colspan=\"2\" style=\"text-align: center;\"><button type=\"submit\">Log in</button></td></tr>\n";
+		$result .= "</table>\n";
+
 		return $result;
 	}
 }

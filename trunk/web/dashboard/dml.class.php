@@ -25,16 +25,13 @@ require_once("porpoise.inc.php");
  * @subpackage Dashboard
  */
 class DML {
-	/** Root of PorPOISe files */
-	const PORPOISE_ROOT = "/../..";
-
 	/**
 	 * Get configuration
 	 *
 	 * @return PorPOISeConfig
 	 */
 	static public function getConfiguration() {
-		return new PorPOISeConfig(dirname(__FILE__) . self::PORPOISE_ROOT . "/config.xml");
+		return new PorPOISeConfig("config.xml");
 	}
 
 	/**
@@ -62,5 +59,20 @@ class DML {
 		}
 
 		return FALSE;
+	}
+
+	/**
+	 * Check for validity of UN/PW combination
+	 *
+	 * @param string $username
+	 * @param string $password In unencrypted form
+	 *
+	 * @return bool TRUE if combination is valid, FALSE otherwise
+	 */
+	public function validCredentials($username, $password) {
+		if (empty($GLOBALS["_access"][$username])) {
+			return FALSE;
+		}
+		return ($GLOBALS["_access"][$username] === crypt($password, $GLOBALS["_access"][$username]));
 	}
 }

@@ -16,6 +16,9 @@
 /** Dashboard includes */
 require_once("dashboard.inc.php");
 
+/** authorization */
+require_once("authorize.inc.php");
+
 /* basic request validation */
 if (empty($_REQUEST["action"])) {
 	$_action = "main";
@@ -29,7 +32,7 @@ try {
 	case "main":
 		GUI::printMessage("%s", GUI::createMainScreen());
 		break;
-	case "viewLayer":
+	case "layer":
 		GUI::printMessage("%s", GUI::createLayerScreen($_REQUEST["layerName"]));
 		break;
 	default:

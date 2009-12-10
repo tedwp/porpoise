@@ -17,3 +17,5 @@
 require_once(dirname(__FILE__) . "/dml.class.php");
 /** GUI */
 require_once(dirname(__FILE__) . "/gui.class.php");
+/** users */
+require_once(dirname(__FILE__) . "/users.inc.php");
