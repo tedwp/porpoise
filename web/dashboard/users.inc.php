@@ -7,12 +7,10 @@
  */
 
 /**
- * PorPOISe configuration editor
+ * PorPOISe Dashboard access definition
  *
  * @package PorPOISe
  * @subpackage Dashboard
  */
-
-/**
- * Include common Dashboard logic */
-require_once("init.php");
+$_access = array();
+$_access["default"] = '$1$OktPWv/I$pHDlMZoTCznVANQ.6lWpH/';
