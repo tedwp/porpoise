@@ -69,6 +69,8 @@ class SQLPOICollector implements POICollector {
 	protected function getPDO() {
 		if (empty($this->pdo)) {
 			$this->pdo = new PDO ($this->source, $this->username, $this->password);
+
+			$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			// force UTF-8 (Layar talks UTF-8 and nothing else)
 			$sql = "SET NAMES 'utf8'";
 			$stmt = $this->pdo->prepare($sql);
@@ -111,25 +113,25 @@ class SQLPOICollector implements POICollector {
 			while ($row = $stmt->fetch()) {
 				$pois[] = $row;
 			}
-			foreach ($pois as $poi) {
+			foreach ($pois as $i => $poi) {
 				$sql = "SELECT * FROM Action WHERE poiID=?";
 				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($poi->id));
-				$poi["actions"] = array();
+				$stmt->execute(array($poi["id"]));
+				$pois[$i]["actions"] = array();
 				while ($row = $stmt->fetch()) {
-					$poi["actions"][] = $row;
+					$pois[$i]["actions"][] = $row;
 				}
 				$sql = "SELECT * FROM Object WHERE poiID=?";
 				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($poi->id));
+				$stmt->execute(array($poi["id"]));
 				if ($row = $stmt->fetch()) {
-					$poi["object"] = $row;
+					$pois[$i]["object"] = $row;
 				}
 				$sql = "SELECT * FROM Transform WHERE poiID=?";
 				$stmt = $pdo->prepare($sql);
-				$stmt->execute(array($poi->id));
+				$stmt->execute(array($poi["id"]));
 				if ($row = $stmt->fetch()) {
-					$poi["transform"] = $row;
+					$pois[$i]["transform"] = $row;
 				}
 			}
 
@@ -177,26 +179,51 @@ class SQLPOICollector implements POICollector {
 
 				// blindly insert everything
 				foreach ($pois as $poi) {
-					$this->insertPOI($poi);
+					$this->savePOI($poi);
 				}
 			} else {
 				foreach ($pois as $poi) {
-					if (empty($poi->id)) {
-						$this->insertPOI($poi->id);
-					} else {
-						$oldPOI = $this->getPOIByID($poi->id);
-						if (empty($oldPOI)) {
-							$this->insertPOI($poi);
-						} else {
-							$this->updatePOI($poi);
-						}
-					}
+					$this->savePOI($poi);
 				}
 			}
 			return TRUE;
 		} catch (PDOException $e) {
 			throw new Exception("Database error: " . $e->getMessage());
 		}
+	}
+
+	/**
+	 * Delete a POI
+	 *
+	 * @param string $poiID
+	 *
+	 * @return void
+	 *
+	 * @throws Exception When the POI does not exist
+	 */
+	public function deletePOI($poiID) {
+		$poi = self::getPOIByID($poiID);
+		if (empty($poi)) {
+			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s", $poi->id));
+		}
+
+		$pdo = self::getPDO();
+		$sql = "DELETE FROM Action WHERE poiID=:poiID";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":poiID", $poiID);
+		$stmt->execute();
+		$sql = "DELETE FROM Object WHERE poiID=:poiID";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":poiID", $poiID);
+		$stmt->execute();
+		$sql = "DELETE FROM Transform WHERE poiID=:poiID";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":poiID", $poiID);
+		$stmt->execute();
+		$sql = "DELETE FROM POI WHERE id=:id";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":id", $poiID);
+		$stmt->execute();
 	}
 
 	/**
@@ -235,11 +262,11 @@ class SQLPOICollector implements POICollector {
 	 */
 	protected function savePOI(POI $poi) {
 		$pdo = $this->getPDO();
-		$poiFields = array("alt"," attribution"," dimension"," id"," imageURL"," lat"," lon"," line2"," line3"," line4"," relativeAlt"," title"," type");
+		$poiFields = array("alt","attribution","dimension","id","imageURL","lat","lon","line2","line3","line4","relativeAlt","title","type");
 		
 		// is this a new POI or not?
 		$isNewPOI = TRUE;
-		if (!empty($poi->id)) {
+		if (isset($poi->id)) {
 			$oldPOI = $this->getPOIByID($poi->id);
 			if (!empty($oldPOI)) {
 				$isNewPOI = FALSE;
@@ -251,7 +278,7 @@ class SQLPOICollector implements POICollector {
 			$sql = "INSERT INTO POI (" . implode(",", $poiFields) . ")
 			        VALUES (:" . implode(",:", $poiFields) . ")";
 		} else {
-			$sql = "UPATE POI SET ";
+			$sql = "UPDATE POI SET ";
 			$kvPairs = array();
 			foreach ($poiFields as $poiField) {
 				$kvPairs[] = sprintf("%s=:%s", $poiField, $poiField);
@@ -268,7 +295,9 @@ class SQLPOICollector implements POICollector {
 			$stmt->bindValue(":id", $poi->id);
 		}
 		$stmt->execute();
-		$poi->id = $pdo->lastInsertId();
+		if (!isset($poi->id)) {
+			$poi->id = $pdo->lastInsertId();
+		}
 		$this->saveActions($poi->id, $poi->actions);
 		if ($poi->dimension > 1) {
 			$this->saveObject($poi->id, $poi->object);
@@ -319,6 +348,11 @@ class SQLPOICollector implements POICollector {
 	protected function saveObject($poiID, POIObject $object) {
 		$objectFields = array("baseURL", "full", "reduced", "icon", "size");
 		$pdo = $this->getPDO();
+
+		$sql = "DELETE FROM Object WHERE poiID=:poiID";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":poiID", $poiID);
+		$stmt->execute();
 		
 		$sql = "INSERT INTO Object (poiID," . implode(",", $objectFields) . ") VALUES (:poiID,:" . implode(",:", $objectFields) . ")";
 		$stmt = $pdo->prepare($sql);
@@ -341,6 +375,11 @@ class SQLPOICollector implements POICollector {
 	protected function saveTransform($poiID, POITransform $transform) {
 		$transformFields = array("angle", "rel", "scale");
 		$pdo = $this->getPDO();
+		
+		$sql = "DELETE FROM Transform WHERE poiID=:poiID";
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(":poiID", $poiID);
+		$stmt->execute();
 		
 		$sql = "INSERT INTO Transform (poiID," . implode(",", $transformFields) . ") VALUES (:poiID,:" . implode(",:", $transformFields) . ")";
 		$stmt = $pdo->prepare($sql);

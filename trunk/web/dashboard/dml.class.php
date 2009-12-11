@@ -41,13 +41,25 @@ class DML {
 	 * @return POI[] FALSE if the layer is unknown
 	 */
 	static public function getPOIs($layerName) {
-		$layerDefinition = self::getLayerDefinitionByLayerName($layerName);
+		$layerDefinition = self::getLayerDefinition($layerName);
 		if ($layerDefinition == NULL) {
 			return FALSE;
 		}
+		$poiCollector = self::getPOICollectorFromDefinition($layerDefinition);
+		return $poiCollector->getPOIs(0,0,0,0,array());
+	}
+
+	/**
+	 * Create an appropriate POICollector for a layer definition
+	 *
+	 * @param LayerDefinition $layerDefinition
+	 *
+	 * @return POICollector
+	 */
+	protected static function getPOICollectorFromDefinition(LayerDefinition $layerDefinition) {
 		switch($layerDefinition->getSourceType()) {
 		case LayerDefinition::DSN:
-			$poiCollector = new $layerDefinition->collector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition["password"]);
+			$poiCollector = new $layerDefinition->collector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition->source["password"]);
 			break;
 		case LayerDefinition::FILE:
 			$poiCollector = new $layerDefinition->collector($layerDefinition->source);
@@ -55,8 +67,9 @@ class DML {
 		default:
 			throw new Exception(sprintf("Invalid source type: %d", $layerDefinition->getSourceType()));
 		}
-		return $poiCollector->getPOIs(0,0,0,0,array());
+		return $poiCollector;
 	}
+
 
 	/**
 	 * Get a single POI
@@ -82,6 +95,26 @@ class DML {
 	}
 
 	/**
+	 * Save a POI to the data store
+	 *
+	 * @param string $layerName
+	 * @param POI $poi
+	 */
+	public static function savePOI($layerName, $poi) {
+		self::getPOICollector($layerName)->storePOIs(array($poi));
+	}
+
+	/**
+	 * Delete a POI from the data store
+	 *
+	 * @param string $layerName
+	 * @param string $poiID
+	 */
+	public static function deletePOI($layerName, $poiID) {
+		self::getPOICollector($layerName)->deletePOI($poiID);
+	}
+
+	/**
 	 * Check for validity of UN/PW combination
 	 *
 	 * @param string $username
@@ -89,7 +122,7 @@ class DML {
 	 *
 	 * @return bool TRUE if combination is valid, FALSE otherwise
 	 */
-	public function validCredentials($username, $password) {
+	public static function validCredentials($username, $password) {
 		if (empty($GLOBALS["_access"][$username])) {
 			return FALSE;
 		}
@@ -103,7 +136,7 @@ class DML {
 	 *
 	 * @return LayerDefinition or NULL if the layer was not found
 	 */
-	public static function getLayerDefinitionByLayerName($layerName) {
+	public static function getLayerDefinition($layerName) {
 		$config = self::getConfiguration();
 		foreach ($config->layerDefinitions as $layerDefinition) {
 			if ($layerDefinition->name == $layerName) {
@@ -111,5 +144,22 @@ class DML {
 			}
 		}
 		return NULL;
+	}
+
+	/**
+	 * Get a POICollector for a layer
+	 *
+	 * @param string $layerName
+	 *
+	 * @return POICollector
+	 *
+	 * @throws Exception if the layer does not exist
+	 */
+	protected static function getPOICollector($layerName) {
+		$layerDefinition = self::getLayerDefinition($layerName);
+		if (empty($layerDefinition)) {
+			throw new Exception(sprintf("Unknown layer: %s\n", $layerName));
+		}
+		return self::getPOICollectorFromDefinition($layerDefinition);
 	}
 }

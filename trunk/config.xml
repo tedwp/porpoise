@@ -4,12 +4,12 @@
  <developer-id>12345</developer-id>
  <developer-key>your key here</developer-key>
  <layers>
-  <layer>
+<!--  <layer>
    <name>example</name>
    <collector>XMLPOICollector</collector>
    <source>example.xml</source>
-  </layer>
-<!--  <layer>
+  </layer>-->
+  <layer>
    <name>example</name>
    <collector>SQLPOICollector</collector>
    <source>
@@ -17,6 +17,6 @@
     <username/>
     <password/>
    </source>
-	</layer>-->
+	</layer>
  </layers>
 </porpoise-configuration>
