@@ -125,7 +125,7 @@ class POIAction extends Arrayable {
 class POITransform extends Arrayable {
 	/** @var boolean Specifies whether the POIs position transformation is relative to
 	 * the viewer, i.e. always facing the same direction */
-	public $rel = false;
+	public $rel = FALSE;
 	/** @var float Rotation angle in degrees to rotate the object around the z-axis. */
 	public $angle = 0;
 	/** @var float Scaling factor */
@@ -144,7 +144,7 @@ class POITransform extends Arrayable {
 			$this->angle = (float)$source["angle"];
 			$this->scale = (float)$source["scale"];
 		} else {
-			$this->rel = (bool)$source->rel;
+			$this->rel = (bool)((string)$source->rel);	/* SimpleXMLElement objects always get cast to TRUE even when representing an empty element */
 			$this->angle = (float)$source->angle;
 			$this->scale = (float)$source->scale;
 		}
@@ -311,6 +311,19 @@ abstract class MultidimensionalPOI extends POI {
 	public $object;
 	/** @var int Altitude difference with respect to user's altitude */
 	public $relativeAlt;
+
+	/**
+	 * Extra constructor
+	 */
+	public function __construct($source = NULL) {
+		parent::__construct($source);
+		if (empty($this->transform)) {
+			$this->transform = new POITransform();
+		}
+		if (empty($this->object)) {
+			$this->object = new POIObject();
+		}
+	}
 }
 
 /**

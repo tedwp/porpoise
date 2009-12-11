@@ -227,6 +227,38 @@ class XMLPOICollector implements POICollector {
 	}
 
 	/**
+	 * Delete a POI
+	 *
+	 * @param string $poiID ID of the POI to delete
+	 *
+	 * @return void
+	 *
+	 * @throws Exception If the source is invalid or the POI could not be deleted
+	 */
+	public function deletePOI($poiID) {
+		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
+
+		$dom = new DOMDocument();
+		$dom->load($this->source);
+		$xpath = new DOMXPath($dom);
+		$nodes = $xpath->query(sprintf("//poi[id='%s']", $poiID));
+		if ($nodes->length == 0) {
+			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s"));
+		}
+		$nodesToRemove = array();
+		for ($i = 0; $i < $nodes->length; $i++) {
+			$nodesToRemove[] = $nodes->item($i);
+		}
+		foreach ($nodesToRemove as $node) {
+			$node->parentNode->removeChild($node);
+		}
+
+		$dom->save($this->source);
+
+		libxml_use_internal_errors($libxmlErrorHandlingState);
+	}
+
+	/**
 	 * Convert an array to a SimpleXMLElement
 	 *
 	 * Converts $array to a SimpleXMLElement by mapping they array's keys
@@ -283,7 +315,7 @@ class XMLPOICollector implements POICollector {
 			} else if ($key == "transform") {
 				$result .= sprintf("<transform><rel>%s</rel><angle>%s</angle><scale>%s</scale></transform>\n", $value->rel, $value->angle, $value->scale);
 			} else if ($key == "object") {
-				$result .= sprintf("<object><baseURL>%s</baseURL><full>%s</full><reduced>%s</reduced><icon>%d</icon><size>%s</size></object>\n", $value->baseURL, $value->full, $value->reduced, $value->icon, $value->size);
+				$result .= sprintf("<object><baseURL>%s</baseURL><full>%s</full><reduced>%s</reduced><icon>%s</icon><size>%s</size></object>\n", $value->baseURL, $value->full, $value->reduced, $value->icon, $value->size);
 			} else {
 				$result .= sprintf("<%s>%s</%s>\n", $key, $value, $key);
 			}

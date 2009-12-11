@@ -26,8 +26,12 @@ if (empty($_REQUEST["action"])) {
 	$_action = $_REQUEST["action"];
 }
 
-/* handle action */
 try {
+	/* handle POST (if any) */
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+		GUI::handlePOST();
+	}
+	/* handle action */
 	switch($_action) {
 	case "main":
 		GUI::printMessage("%s", GUI::createMainScreen());
@@ -41,6 +45,9 @@ try {
 			throw new Exception(sprintf("POI not found: %s:%s", $_REQUEST["layerName"], $_REQUEST["poiID"]));
 		}
 		GUI::printMessage("%s", GUI::createPOIScreen($_REQUEST["layerName"], $poi));
+		break;
+	case "newPOI":
+		GUI::printMessage("%s", GUI::createNewPOIScreen($_REQUEST["layerName"]));
 		break;
 	default:
 		throw new Exception(sprintf("Invalid action: %s", $_action));
