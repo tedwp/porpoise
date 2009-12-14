@@ -1,3 +1,7 @@
+= Release 0.5 =
+- Dashboard for managing POIs through web interface
+- Support for v3 Layars with 3D-objects
+
 = Release 0.3 =
 - Added support for XSL style sheets
 - Added better UTF-8 handling for databases
