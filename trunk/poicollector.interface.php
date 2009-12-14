@@ -61,4 +61,15 @@ interface POICollector {
 	 * @return void
 	 */
 	public function storePOIs(array $pois, $mode = "update");
+
+	/**
+	 * Delete a POI
+	 *
+	 * @param string $poiID ID of the POI to delete
+	 *
+	 * @return void
+	 *
+	 * @throws Exception If the source is invalid or the POI could not be deleted
+	 */
+	public function deletePOI($poiID);
 }

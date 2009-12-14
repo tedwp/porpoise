@@ -7,10 +7,14 @@
  */
 
 /**
- * PorPOISe Dashboard access definition
+ * PorPOISe Dashboard access definition file
+ *
+ * Format of the _access table:
+ * Keys map to user names, values map to hashed passwords. To generate
+ * a password, simply call crypt("<password>") or execute "crypt.php".
  *
  * @package PorPOISe
  * @subpackage Dashboard
  */
 $_access = array();
-$_access["default"] = '$1$OktPWv/I$pHDlMZoTCznVANQ.6lWpH/';
+$_access["default"] = '';

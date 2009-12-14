@@ -251,7 +251,33 @@ class FlatPOICollector implements POICollector {
 		if ($asString) {
 			return $result;
 		} else {
-			return TRUE && file_put_contents($this->source, $result);
+			$result = file_put_contents($this->source, $result);
+			if ($result) {
+				return TRUE;
+			} else {
+				throw new Exception("Failed to save POIs to file");
+			}
 		}
+	}
+
+	/**
+	 * Delete a POI
+	 *
+	 * @param string $poiID ID of the POI to delete
+	 *
+	 * @return void
+	 *
+	 * @throws Exception If the source is invalid or the POI could not be deleted
+	 */
+	public function deletePOI($poiID) {
+		$pois = $this->getPOIs(0,0,0,0,array());
+		foreach ($pois as $key => $poi) {
+			if ($poi->id == $poiID) {
+				unset($pois[$key]);
+				$this->storePOIs($pois, "replace");
+				return;
+			}
+		}
+		throw new Exception(sprintf("Could not delete POI: no POI found with ID %s", $poiID));
 	}
 }
