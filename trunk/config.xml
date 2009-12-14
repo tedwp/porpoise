@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<porpoise-configuration>
+ <developer-id>12345</developer-id>
+ <developer-key>your key here</developer-key>
+ <layers>
+<!--
+Sample tab-delimited layer configuration
+  <layer>
+   <name>example</name>
+   <collector>FlatPOICollector</collector>
+   <source>example.tab</source>
+  </layer>
+-->
+<!--
+Sample XML layer configuration
+-->  <layer>
+   <name>example</name>
+   <collector>XMLPOICollector</collector>
+   <source>example.xml</source>
+  </layer>
+<!---->
+<!--
+Sample database layer configuration
+  <layer>
+   <name>example</name>
+   <collector>SQLPOICollector</collector>
+   <source>
+    <dsn>mysql:host=localhost;dbname=example</dsn>
+    <username/>
+    <password/>
+   </source>
+  </layer>
+-->
+ </layers>
+</porpoise-configuration>
