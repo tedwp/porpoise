@@ -1,32 +1,33 @@
-PorPOISe for Layar
-===============
+===PorPOISe for Layar===
 SURFnet's Portable Point-of-Interest Server for Layar
 
-Administrative contact
-======================
+===Administrative contact===
 Jens de Smit, jens.desmit@surfnet.nl
 
-Getting started
-===============
-Extract all files into a directory on a web server running PHP and
-optionally MySQL. Open example.php and alter the definitions of DEVELOPER_ID
-and DEVELOPER_KEY to match yours. Change the key "example" in the array
-definition of $flatLayers to the name your layer has/will have with the
-Layar folks. Try accessing the script through a web browser; you should get
-a JSON response telling you about missing parameters. If you see this, the
-server is running properly.
+===Introduction===
+PorPOISe is a server for Layar clients. It converts your data sets of POIs
+(Points of Interest) into responses to the Layar client. Things like JSON
+formatting and distance calculation are all done for you. PorPOISe supports
+tab-delimited files, XML files and SQL databases as data stores.
 
-Create a layer on the Layar development site and have it point at the URL of
-your example.php. Open up the Layar developer app, use the fixed location
-(52.090473175, 5.11091709137) and you should see the example point of
-interest very nearby!
+===Getting started===
+Read INSTALL for installation instructions. Once properly installed, you can
+use the dashboard to create your first POIs. The interface is pretty spartan
+but this will generate correct output format. Study the format if you intend to
+generate your own .tab/.xml files or database.
 
-Once this works, you can add your own POIs. If you want to stick to plain
-text files, add them to example.tab (or another file in the same format).
-Alternatively, create a database in MySQL and use database.sql to create the
-POI and Action tables for you. Alter example.php to use the database POI
-collector instead of the file POI collector (an example line is near the
-bottom of the file, commented out) and you should be good to go.
+From here on you're on your own. Build a better interface for the dashboard or
+expand PorPOISe to have more features if you need more.
 
-From there on you're on your own. Build a frontend to manage POIs on the
-database or expand PorPOISe to have more features if you need more.
+===A note on tab-delimited files===
+As Layar gains more features and the data format for responses gets complexer,
+the use of a tab-delimited format loses its appeal. Future releases of PorPOISe
+may very well drop support for tab-delimited formates. If you're new to
+PorPOISe, consider using XML files or a database from the get-go. For those
+currently running off of tab-delimited files, the release that drops
+tab-delimited support will provide a converter.
+
+===More information===
+  * http://www.surfnet.nl/en The home of the creator of PorPOISe
+  * http://teknograd.wordpress.com/2009/10/19/augmented-reality-create-your-own-layar-layer/ An explanation on how to build the most minimal of Layar servers. Very useful to get started
+  * http://layar.com/ is, of course, the reason this project exists

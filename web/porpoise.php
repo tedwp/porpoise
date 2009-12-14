@@ -20,7 +20,7 @@
  * information (especially config.xml), so you'll want to keep
  * them away from spying eyes!
  */
-chdir("..");
+chdir(dirname(__FILE__) . "/..");
 
 /**
  * Include PorPOISe

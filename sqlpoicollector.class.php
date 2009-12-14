@@ -204,7 +204,7 @@ class SQLPOICollector implements POICollector {
 	public function deletePOI($poiID) {
 		$poi = self::getPOIByID($poiID);
 		if (empty($poi)) {
-			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s", $poi->id));
+			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s", $poiID));
 		}
 
 		$pdo = self::getPDO();

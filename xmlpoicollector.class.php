@@ -243,7 +243,7 @@ class XMLPOICollector implements POICollector {
 		$xpath = new DOMXPath($dom);
 		$nodes = $xpath->query(sprintf("//poi[id='%s']", $poiID));
 		if ($nodes->length == 0) {
-			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s"));
+			throw new Exception(sprintf("Could not delete POI: no POI found with ID %s", $poiID));
 		}
 		$nodesToRemove = array();
 		for ($i = 0; $i < $nodes->length; $i++) {

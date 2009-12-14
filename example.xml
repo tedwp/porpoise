@@ -1,38 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pois>
- <poi>
-<dimension>2</dimension>
-<alt>1</alt>
-<transform><rel/><angle>1</angle><scale>1</scale></transform>
-<object><baseURL>ttp://kershalt.wind.surfnet.nl/models/</baseURL><full>ate.l3d</full><reduced>ate.l3d</reduced><icon>ate.l3d</icon><size>1</size></object>
-<relativeAlt>1</relativeAlt>
-<attribution>ttribution</attribution>
-<distance/>
-<id>1</id>
-<imageURL>test</imageURL>
-<lat>2.090489578</lat>
-<lon>0.11233329773</lon>
-<line2>ine2</line2>
-<line3>ine3</line3>
-<line4>ine4</line4>
-<title>Example POI</title>
-<type>2</type>
-</poi>
-<poi>
-<dimension>2</dimension>
-<alt/>
-<transform><rel/><angle>0</angle><scale>1</scale></transform>
-<object><baseURL/><full/><reduced/><icon/><size/></object>
-<relativeAlt/>
-<attribution/>
-<distance/>
-<id>3</id>
-<imageURL/>
-<lat/>
-<lon/>
-<line2/>
-<line3/>
-<line4/>
-<title/>
-<type/>
-</poi></pois>
+ 
+
+</pois>
