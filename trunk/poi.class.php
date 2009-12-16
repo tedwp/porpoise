@@ -67,7 +67,7 @@ abstract class Arrayable {
  * @package PorPOISe
  */
 class POIAction extends Arrayable {
-	/** @const string Default action label for. Only for  flat files */
+	/** Default action label. Only for  flat files */
 	const DEFAULT_ACTION_LABEL = "Do something funky";
 
 	/** @var string URI that should be invoked by activating this action */
@@ -111,7 +111,7 @@ class POIAction extends Arrayable {
 			$this->uri = (string)$source->uri;
 			if (!empty($source->autoTriggerRange)) {
 				$this->autoTriggerRange = (int)$source->autoTriggerRange;
-				$this->autoTriggerOnly = (bool)$source->autoTriggerOnly;
+				$this->autoTriggerOnly = (bool)((string)$source->autoTriggerOnly);
 			}
 		}
 	}

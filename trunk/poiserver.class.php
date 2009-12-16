@@ -36,9 +36,9 @@ require_once("sqlpoicollector.class.php");
  * @package PorPOISe
  */
 class LayarPOIServer {
-	/** @const int Default error code */
+	/** Default error code */
 	const ERROR_CODE_DEFAULT = 20;
-	/** @const int Request has no POIs in result */
+	/** Request has no POIs in result */
 	const ERROR_CODE_NO_POIS = 21;
 
 	/** @var string[] Error messages stored in an array because class constants cannot be arrays */

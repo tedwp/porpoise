@@ -103,14 +103,7 @@ class XMLPOICollector implements POICollector {
 			foreach ($poiData->children() as $child) {
 				$nodeName = $child->getName();
 				if ($nodeName == "action") {
-					$action = new POIAction();
-					$action->uri = (string)$child->uri;
-					$action->label = (string)$child->label;
-					if (!empty($child->autoTriggerRange)) {
-						$action->autoTriggerRange = (int)$child->autoTriggerRange;
-						$action->autoTriggerOnly = (bool)$child->autoTriggerOnly;
-					}
-					$poi->actions[] = $action;
+					$poi->actions[] = new POIAction($child);
 				} else if ($nodeName == "object") {
 					$poi->object = new POIObject($child);
 				} else if ($nodeName == "transform") {
