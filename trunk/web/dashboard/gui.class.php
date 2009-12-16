@@ -157,7 +157,7 @@ HTML;
 	public static function createMainConfigurationTable() {
 		$config = DML::getConfiguration();
 		$result = "";
-		$result .= "<table>\n";
+		$result .= "<table class=\"config\">\n";
 		$result .= sprintf("<tr><td>Developer ID</td><td>%s</td></tr>\n", $config->developerID);
 		$result .= sprintf("<tr><td>Developer key</td><td>%s</td></tr>\n", (self::SHOW_DEVELOPER_KEY ? $config->developerKey : "&lt;hidden&gt;"));
 		$result .= sprintf("</table>\n");
@@ -213,7 +213,7 @@ HTML;
 		if ($pois === NULL || $pois === FALSE) {
 			throw new Exception("Error retrieving POIs");
 		}
-		$result .= "<table>\n";
+		$result .= "<table class=\"pois\">\n";
 		$result .= "<tr><th>Title</th><th>Lat/lon</th></tr>\n";
 		foreach ($pois as $poi) {
 			$result .= "<tr>\n";
@@ -265,16 +265,37 @@ HTML;
 			$relOptions = array(TRUE => "Yes", FALSE => "No");
 			$result .= sprintf("<tr><td>Relative angle</td><td>%s</td></tr>\n", self::createSelect("rel", $relOptions, (bool)$poi->transform->rel));
 		}
+		foreach ($poi->actions as $key => $action) {
+			$result .= sprintf("<tr><td>Action</td><td>%s</td></tr>\n", self::createActionSubtable($key, $action));
+		}
 
-		/** @todo actions */
-
-	//	$result .= sprintf("<tr><td></td><td><input type=\"text\" name=\"\" value=\"%s\"></td></tr>\n", $poi->id);
 
 		$result .= "<caption><button type=\"submit\">Save</button></caption>\n";
 		$result .= "</table>\n";
 		$result .= "</form>";
 		return $result;
 	}
+
+	/**
+	 * Create a subtable for an action for inside a form
+	 *
+	 * @param string $index Index of the action in the actions[] array
+	 * @param POIAction $action The action
+	 *
+	 * @return string
+	 */
+	protected static function createActionSubtable($index, POIAction $action) {
+		$result = "";
+		$result .= "<table class=\"action\">\n";
+		$result .= sprintf("<tr><td>Label</td><td><input type=\"text\" name=\"actions[%s][label]\" value=\"%s\"></td></tr>\n", $index, $action->label);
+		$result .= sprintf("<tr><td>URI</td><td><input type=\"text\" name=\"actions[%s][uri]\" value=\"%s\"></td></tr>\n", $index, $action->uri);
+		$result .= sprintf("<tr><td>Auto-trigger range</td><td><input type=\"text\" name=\"actions[%s][autoTriggerRange]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->autoTriggerRange);
+		$result .= sprintf("<tr><td>Auto-trigger only</td><td>%s</td></tr>\n", self::createSelect(sprintf("actions[%s][autoTriggerOnly]", $index), array(TRUE => "Yes", FALSE => "No"), (bool)$action->autoTriggerOnly));
+		$result .= "</table>\n";
+
+		return $result;
+	}
+
 
 	/**
 	 * Create a screen for a new POI
@@ -286,7 +307,7 @@ HTML;
 	public function createNewPOIScreen($layerName) {
 		$result = "";
 		$result .= sprintf("<form action=\"?action=newPOI&layerName=%s\" method=\"POST\">\n", urlencode($layerName));
-		$result .= sprintf("<table>\n");
+		$result .= sprintf("<table class=\"newPOI\">\n");
 		$result .= sprintf("<tr><td>Dimension</td><td><input type=\"text\" name=\"dimension\" size=\"1\"></td></tr>\n");
 		$result .= sprintf("<caption><button type=\"submit\">Create</button></caption>");
 		$result .= "</table>\n";
@@ -318,7 +339,7 @@ HTML;
 			$getString .= urlencode($key) . "=" . urlencode($value);
 		}
 		$result .= sprintf("<form method=\"POST\" action=\"%s%s\">\n", $_SERVER["PHP_SELF"], $getString);
-		$result .= "<table>\n";
+		$result .= "<table class=\"login\">\n";
 		$result .= "<tr><td>Username</td><td><input type=\"text\" name=\"username\" size=\"15\"></td></tr>\n";
 		$result .= "<tr><td>Password</td><td><input type=\"password\" name=\"password\" size=\"15\"></td></tr>\n";
 		$result .= "<caption><button type=\"submit\">Log in</button></caption>\n";
@@ -431,6 +452,11 @@ HTML;
 			case "scale":
 				$result->transform->$key = (float)$request[$key];
 				break;
+			case "actions":
+				foreach ($value as $action) {
+					$result->actions[] = new POIAction($action);
+				}
+				break;
 			default:
 				$result->$key = (string)$request[$key];
 				break;
@@ -448,7 +474,7 @@ HTML;
 	 * @param string $action New action to go to
 	 * @param array $arguments
 	 *
-	 * @return On success, does not return but calls exit()
+	 * @return void On success, does not return but calls exit()
 	 */
 	protected static function redirect($where, array $arguments = array()) {
 		if (headers_sent()) {
