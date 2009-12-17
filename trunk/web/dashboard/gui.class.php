@@ -91,6 +91,8 @@ class GUI {
 <head>
 <title>PorPOISe POI Management Interface</title>
 <link rel="stylesheet" type="text/css" href="styles.css">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="scripts.js"></script>
 </head>
 <body>
 
@@ -266,9 +268,9 @@ HTML;
 			$result .= sprintf("<tr><td>Relative angle</td><td>%s</td></tr>\n", self::createSelect("rel", $relOptions, (bool)$poi->transform->rel));
 		}
 		foreach ($poi->actions as $key => $action) {
-			$result .= sprintf("<tr><td>Action</td><td>%s</td></tr>\n", self::createActionSubtable($key, $action));
+			$result .= sprintf("<tr><td>Action<br><button type=\"button\" onclick=\"GUI.removePOIAction(%s)\">Remove</button></td><td>%s</td></tr>\n", $key, self::createActionSubtable($key, $action));
 		}
-
+		$result .= sprintf("<tr><td colspan=\"2\"><button type=\"button\" onclick=\"GUI.addPOIAction(this)\">New action</button></td></tr>\n");
 
 		$result .= "<caption><button type=\"submit\">Save</button></caption>\n";
 		$result .= "</table>\n";
