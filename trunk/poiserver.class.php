@@ -23,12 +23,14 @@
 require_once("poi.class.php");
 /** Requires Layer definition */
 require_once("layer.class.php");
-/** Requires FlatPOICollector */
-require_once("flatpoicollector.class.php");
-/** Requires FlatPOICollector */
-require_once("xmlpoicollector.class.php");
-/** Requires SQLPOICollector */
-require_once("sqlpoicollector.class.php");
+/** Requires LayarFilter */
+require_once("filter.class.php");
+/** Requires FlatPOIConnector */
+require_once("flatpoiconnector.class.php");
+/** Requires FlatPOIConnector */
+require_once("xmlpoiconnector.class.php");
+/** Requires SQLPOIConnector */
+require_once("sqlpoiconnector.class.php");
 
 /**
  * Server class that serves up POIs for Layar
@@ -44,7 +46,7 @@ class LayarPOIServer {
 	/** @var string[] Error messages stored in an array because class constants cannot be arrays */
 	protected static $ERROR_MESSAGES = array(
 		self::ERROR_CODE_DEFAULT => "An error occurred"
-		, self::ERROR_CODE_NO_POIS => "No POIs nearby. Increase range to see POIs"
+		, self::ERROR_CODE_NO_POIS => "No POIs found. Increase range or adjust filters to see POIs"
 	);
 
 	// layers in this server
@@ -74,13 +76,10 @@ class LayarPOIServer {
 	public function handleRequest() {
 		try {
 			$this->validateRequest();
+			$filter = $this->buildFilter();
 	
-			$options = array();
-			foreach ($this->optionalFields as $optionalField) {
-				$options[$optionalField] = $_REQUEST[$optionalField];
-			}
 			$layer = $this->layers[$_REQUEST["layerName"]];
-			$layer->determineNearbyPOIs($_REQUEST["lat"], $_REQUEST["lon"], $_REQUEST["radius"], $_REQUEST["accuracy"], $options);
+			$layer->determineNearbyPOIs($filter);
 			$pois = $layer->getNearbyPOIs();
 			if (count($pois) == 0) {
 				$this->sendErrorResponse(self::ERROR_CODE_NO_POIS);
@@ -209,6 +208,64 @@ class LayarPOIServer {
 		}
 
 	}
+
+	/**
+	 * Build a filter object from the request
+	 *
+	 * @return LayarFilter
+	 */
+	protected function buildFilter() {
+		$result = new LayarFilter();
+		foreach ($_REQUEST as $key => $value) {
+			switch ($key) {
+			case "userId":
+				$result->userID = $value;
+				break;
+			case "timestamp":
+			case "accuracy":
+			case "radius":
+			case "alt":
+				$result->$key = (int)$value;
+				break;
+			case "lat":
+			case "lon":
+				$result->$key = (float)$value;
+				break;
+			case "RADIOLIST":
+				$result->radiolist = $value;
+				break;
+			case "SEARCHBOX":
+			case "SEARCHBOX_1":
+				$result->searchbox1 = $value;
+				break;
+			case "SEARCHBOX_2":
+				$result->searchbox2 = $value;
+				break;
+			case "SEARCHBOX_3":
+				$result->searchbox3 = $value;
+				break;
+			case "CUSTOM_SLIDER":
+			case "CUSTOM_SLIDER_1":
+				$result->customSlider1 = (float)$value;
+				break;
+			case "CUSTOM_SLIDER_2":
+				$result->customSlider2 = (float)$value;
+				break;
+			case "CUSTOM_SLIDER_3":
+				$result->customSlider3 = (float)$value;
+				break;
+			case "CHECKBOXLIST":
+				$result->checkboxlist = explode(",", $value);
+				break;
+			}
+		}
+
+		if (!empty($_COOKIE["porpoiseUID"])) {
+			$filter->uid = $_COOKIE["porpoiseUID"];
+		}
+
+		return $result;
+	}
 }
 
 /**
@@ -236,6 +293,8 @@ class LayarPOIServerFactory {
 	/**
 	 * Create a LayarPOIServer with content from a list of files
 	 *
+	 * @deprecated Use the more generic createLayarPOIServer
+	 *
 	 * @param array $layerFiles The key of each element is expected to be the
 	 * layer's name, the value to be the filename of the file containing the
 	 * layer's POI in tab delimited format.
@@ -246,8 +305,8 @@ class LayarPOIServerFactory {
 		$result = new LayarPOIServer();
 		foreach ($layerFiles as $layerName => $layerFile) {
 			$layer = new Layer($layerName, $this->developerId, $this->developerKey);
-			$poiCollector = new FlatPOICollector($layerFile);
-			$layer->setPOICollector($poiCollector);
+			$poiConnector = new FlatPOIConnector($layerFile);
+			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}
 		return $result;
@@ -255,6 +314,8 @@ class LayarPOIServerFactory {
 
 	/**
 	 * Create a LayarPOIServer with content from a list of XML files
+	 *
+	 * @deprecated Use the more generic createLayarPOIServer
 	 *
 	 * @param array $layerFiles The key of each element is expected to be the
 	 * layer's name, the value to be the filename of the file containing the
@@ -269,9 +330,9 @@ class LayarPOIServerFactory {
 		$result = new LayarPOIServer();
 		foreach ($layerFiles as $layerName => $layerFile) {
 			$layer = new Layer($layerName, $this->developerId, $this->developerKey);
-			$poiCollector = new XMLPOICollector($layerFile);
-			$poiCollector->setStyleSheet($layerXSL);
-			$layer->setPOICollector($poiCollector);
+			$poiConnector = new XMLPOIConnector($layerFile);
+			$poiConnector->setStyleSheet($layerXSL);
+			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}
 		return $result;
@@ -279,6 +340,8 @@ class LayarPOIServerFactory {
 
 	/**
 	 * Create a LayarPOIServer with content from a database
+	 *
+	 * @deprecated Use the more generic createLayarPOIServer
 	 *
 	 * @param array $layerDefinitions The keys of $layerDefinitions define
 	 * the names of the created layers, the values should be arrays with
@@ -297,8 +360,8 @@ class LayarPOIServerFactory {
 			if (empty($credentials["password"])) {
 				$credentials["password"] = "";
 			}
-			$poiCollector = new SQLPOICollector($credentials["dsn"], $credentials["username"], $credentials["password"]);
-			$layer->setPOICollector($poiCollector);
+			$poiConnector = new SQLPOIConnector($credentials["dsn"], $credentials["username"], $credentials["password"]);
+			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}
 
@@ -308,15 +371,17 @@ class LayarPOIServerFactory {
 	/**
 	 * Create a server based on SimpleXML configuration directives
 	 *
+	 * @deprecated Use the more generic createLayarPOIServer
+	 *
 	 * $config is an array of SimpleXMLElements, each element should contain
-	 * layer nodes specifying collector (class name), layer name and data source.
+	 * layer nodes specifying connector (class name), layer name and data source.
 	 * The root node name is not important but "layers" is suggested.
 	 * For flat files and XML, use a URI as source. For SQL, use dsn, username
 	 * and password elements.
 	 * Example:
 	 * <layers>
 	 *  <layer>
-	 *   <collector>SQLPOICollector</collector>
+	 *   <connector>SQLPOIConnector</connector>
 	 *   <name>test</name>
 	 *   <source>
 	 *    <dsn>mysql:host=localhost</dsn>
@@ -334,13 +399,13 @@ class LayarPOIServerFactory {
 		$result = new LayarPOIServer();
 		foreach ($config->xpath("layer") as $child) {
 			$layer = new Layer((string)$child->name, $this->developerId, $this->developerKey);
-			if ((string)$child->collector == "SQLPOICollector") {
-				$poiCollector = new SQLPOICollector((string)$child->source->dsn, (string)$child->source->username, (string)$child->source->password);
+			if ((string)$child->connector == "SQLPOIConnector") {
+				$poiConnector = new SQLPOIConnector((string)$child->source->dsn, (string)$child->source->username, (string)$child->source->password);
 			} else {
-				$collectorName = (string)$child->collector;
-				$poiCollector = new $collectorName((string)$child->source);
+				$connectorName = (string)$child->connector;
+				$poiConnector = new $connectorName((string)$child->source);
 			}
-			$layer->setPOICollector($poiCollector);
+			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}
 		return $result;
@@ -357,11 +422,11 @@ class LayarPOIServerFactory {
 		foreach ($definitions as $definition) {
 			$layer = new Layer($definition->name, $this->developerId, $this->developerKey);
 			if ($definition->getSourceType() == LayerDefinition::DSN) {
-				$poiCollector = new $definition->collector($definition->source["dsn"], $definition->source["username"], $definition->source["password"]);
+				$poiConnector = new $definition->connector($definition->source["dsn"], $definition->source["username"], $definition->source["password"]);
 			} else {
-				$poiCollector = new $definition->collector($definition->source);
+				$poiConnector = new $definition->connector($definition->source);
 			}
-			$layer->setPOICollector($poiCollector);
+			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}
 		return $result;

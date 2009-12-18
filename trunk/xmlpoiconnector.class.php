@@ -10,7 +10,7 @@
  */
 
 /**
- * POI collector from XML files
+ * POI connector from XML files
  *
  * @package PorPOISe
  */
@@ -21,20 +21,20 @@
 require_once("poi.class.php");
 
 /**
- * Requires POICollector interface
+ * Requires POIConnector class
  */
-require_once("poicollector.interface.php");
+require_once("poiconnector.class.php");
 /**
  * Requires GeoUtil
  */
 require_once("geoutil.class.php");
 
 /**
- * POI collector from XML files
+ * POI connector from XML files
  *
  * @package PorPOISe
  */
-class XMLPOICollector implements POICollector {
+class XMLPOIConnector extends POIConnector {
 	const EMPTY_DOCUMENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<pois/>";
 	/** @var string */
 	protected $source;
@@ -66,18 +66,19 @@ class XMLPOICollector implements POICollector {
 	/**
 	 * Get POIs
 	 *
-	 * @param float $lat
-	 * @param float $lon
-	 * @param int $radius
-	 * @param int $accuracy
-	 * @param array $options
+	 * @param Filter $filter
 	 *
 	 * @return POI[]
 	 *
 	 * @throws Exception
 	 */
-	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
+	public function getPOIs(Filter $filter = NULL) {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
+
+		$lat = $filter->lat;
+		$lon = $filter->lon;
+		$radius = $filter->radius;
+		$accuracy = $filter->accuracy;
 
 		if(!empty($this->styleSheetPath)) {
 			$simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
@@ -128,10 +129,13 @@ class XMLPOICollector implements POICollector {
 				}
 			}
 
-			$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-			/* new in Layar 3: flexible radius */
-			if (empty($radius) || $poi->distance < $radius + $accuracy) {
+			if (empty($filter)) {
 				$result[] = $poi;
+			} else {
+				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
+					$result[] = $poi;
+				}
 			}
 		}
 
@@ -144,7 +148,7 @@ class XMLPOICollector implements POICollector {
 	 * Store POIs
 	 *
 	 * Builds up an XML and writes it to the source file with which this
-	 * XMLPOICollector was created. Note that there is no way to do
+	 * XMLPOIConnector was created. Note that there is no way to do
 	 * "reverse XSL" so any stylesheet is ignored and native PorPOISe XML
 	 * is written to the source file. If this file is not writable, this
 	 * method will return FALSE.

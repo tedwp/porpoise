@@ -45,29 +45,29 @@ class DML {
 		if ($layerDefinition == NULL) {
 			return FALSE;
 		}
-		$poiCollector = self::getPOICollectorFromDefinition($layerDefinition);
-		return $poiCollector->getPOIs(0,0,0,0,array());
+		$poiConnector = self::getPOIConnectorFromDefinition($layerDefinition);
+		return $poiConnector->getPOIs();
 	}
 
 	/**
-	 * Create an appropriate POICollector for a layer definition
+	 * Create an appropriate POIConnector for a layer definition
 	 *
 	 * @param LayerDefinition $layerDefinition
 	 *
-	 * @return POICollector
+	 * @return POIConnector
 	 */
-	protected static function getPOICollectorFromDefinition(LayerDefinition $layerDefinition) {
+	protected static function getPOIConnectorFromDefinition(LayerDefinition $layerDefinition) {
 		switch($layerDefinition->getSourceType()) {
 		case LayerDefinition::DSN:
-			$poiCollector = new $layerDefinition->collector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition->source["password"]);
+			$poiConnector = new $layerDefinition->connector($layerDefinition->source["dsn"], $layerDefinition->source["username"], $layerDefinition->source["password"]);
 			break;
 		case LayerDefinition::FILE:
-			$poiCollector = new $layerDefinition->collector($layerDefinition->source);
+			$poiConnector = new $layerDefinition->connector($layerDefinition->source);
 			break;
 		default:
 			throw new Exception(sprintf("Invalid source type: %d", $layerDefinition->getSourceType()));
 		}
-		return $poiCollector;
+		return $poiConnector;
 	}
 
 
@@ -79,7 +79,7 @@ class DML {
 	 *
 	 * @return POI
 	 *
-	 * @todo Rewrite as soon as POICollectors support getPOI
+	 * @todo Rewrite as soon as POIConnectors support getPOI
 	 */
 	static public function getPOI($layerName, $poiID) {
 		$pois = self::getPOIs($layerName);
@@ -101,7 +101,7 @@ class DML {
 	 * @param POI $poi
 	 */
 	public static function savePOI($layerName, $poi) {
-		self::getPOICollector($layerName)->storePOIs(array($poi));
+		self::getPOIConnector($layerName)->storePOIs(array($poi));
 	}
 
 	/**
@@ -111,7 +111,7 @@ class DML {
 	 * @param string $poiID
 	 */
 	public static function deletePOI($layerName, $poiID) {
-		self::getPOICollector($layerName)->deletePOI($poiID);
+		self::getPOIConnector($layerName)->deletePOI($poiID);
 	}
 
 	/**
@@ -147,19 +147,19 @@ class DML {
 	}
 
 	/**
-	 * Get a POICollector for a layer
+	 * Get a POIConnector for a layer
 	 *
 	 * @param string $layerName
 	 *
-	 * @return POICollector
+	 * @return POIConnector
 	 *
 	 * @throws Exception if the layer does not exist
 	 */
-	protected static function getPOICollector($layerName) {
+	protected static function getPOIConnector($layerName) {
 		$layerDefinition = self::getLayerDefinition($layerName);
 		if (empty($layerDefinition)) {
 			throw new Exception(sprintf("Unknown layer: %s\n", $layerName));
 		}
-		return self::getPOICollectorFromDefinition($layerDefinition);
+		return self::getPOIConnectorFromDefinition($layerDefinition);
 	}
 }
