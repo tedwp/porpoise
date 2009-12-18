@@ -7,7 +7,7 @@
  */
 
 /**
- * POI collector from "flat" files
+ * POI connector from "flat" files
  *
  * @package PorPOISe
  */
@@ -18,20 +18,20 @@
 require_once("poi.class.php");
 
 /**
- * Requires POICollector interface
+ * Requires POIConnector class
  */
-require_once("poicollector.interface.php");
+require_once("poiconnector.class.php");
 /**
  * Requires GeoUtil
  */
 require_once("geoutil.class.php");
 
 /**
- * POI collector from "flat" files
+ * POI connector from "flat" files
  *
  * @package PorPOISe
  */
-class FlatPOICollector implements POICollector {
+class FlatPOIConnector extends POIConnector {
 	/** @var string */
 	protected $source;
 	/** @var string */
@@ -52,20 +52,23 @@ class FlatPOICollector implements POICollector {
 	/**
 	 * Get POIs
 	 *
-	 * @param float $lat
-	 * @param float $lon
-	 * @param int $radius
-	 * @param int $accuracy
-	 * @param array $options
+	 * @param Filter $filter
 	 *
 	 * @return POI[]
 	 *
 	 * @throws Exception
 	 */
-	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
+	public function getPOIs(Filter $filter = NULL) {
 		$file = @file($this->source);
 		if (empty($file)) {
 			throw new Exception("File not readable or empty");
+		}
+
+		if (!empty($filter)) {
+			$lat = $filter->lat;
+			$lon = $filter->lon;
+			$radius = $filter->radius;
+			$accuracy = $filter->accuracy;
 		}
 
 		$result = array();
@@ -124,10 +127,13 @@ class FlatPOICollector implements POICollector {
 				}
 				$poi->$key = $value;
 			}
-			$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-			/* new in Layar 3: flexible radius */
-			if (empty($radius) || $poi->distance < $radius + $accuracy) {
+			if (empty($filter)) {
 				$result[] = $poi;
+			} else {
+				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($filter)) {
+					$result[] = $poi;
+				}
 			}
 		}
 
@@ -142,7 +148,6 @@ class FlatPOICollector implements POICollector {
 	 * @return mixed FALSE on failure, TRUE or a string on success
 	 */
 	public function storePOIs(array $pois, $mode = "update", $asString = FALSE) {
-	/** @todo assign id's */
 		$fields = array("actions", "alt", "attribution", "dimension", "id", "imageURL", "lat", "lon", "line2", "line3", "line4", "object", "relativeAlt", "title", "transform", "type");
 		$actionFields = array("label", "uri", "autoTriggerRange", "autoTriggerOnly");
 		$objectFields = array("baseURL", "full", "reduced", "icon", "size");

@@ -3,28 +3,33 @@
 <porpoise-configuration>
  <developer-id>12345</developer-id>
  <developer-key>your key here</developer-key>
+ <connectors>
+  <connector><name>XMLPOIConnector</name><file>xmlpoiconnector.class.php</file></connector>
+  <connector><name>SQLPOIConnector</name><file>sqlpoiconnector.class.php</file></connector>
+  <connector><name>FlatPOIConnector</name><file>flatpoiconnector.class.php</file></connector>
+ </connectors>
  <layers>
 <!--
 Sample tab-delimited layer configuration
   <layer>
    <name>example</name>
-   <collector>FlatPOICollector</collector>
+   <connector>FlatPOIConnector</connector>
    <source>example.tab</source>
   </layer>
 -->
 <!--
 Sample XML layer configuration
--->  <layer>
+  <layer>
    <name>example</name>
-   <collector>XMLPOICollector</collector>
+   <connector>XMLPOIConnector</connector>
    <source>example.xml</source>
   </layer>
-<!---->
+-->
 <!--
 Sample database layer configuration
   <layer>
    <name>example</name>
-   <collector>SQLPOICollector</collector>
+   <connector>SQLPOIConnector</connector>
    <source>
     <dsn>mysql:host=localhost;dbname=example</dsn>
     <username/>

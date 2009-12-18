@@ -29,6 +29,8 @@ class PorPOISeConfig {
 	public $developerID;
 	/** @var LayerDefinition[] Layers */
 	public $layerDefinitions;
+	/** @var string[] POI connectors */
+	public $poiConnectors;
 
 	/**
 	 * Constructor
@@ -38,6 +40,7 @@ class PorPOISeConfig {
 	 */
 	public function __construct($source = NULL, $fromString = FALSE) {
 		$this->layerDefinitions = array();
+		$this->poiConnectors = array();
 		if (!empty($source)) {
 			$this->load($source, $fromString);
 		}
@@ -58,21 +61,32 @@ class PorPOISeConfig {
 		$config = new SimpleXMLElement($this->source, 0, !$fromString);
 		$this->developerID = (string)$config->{"developer-id"};
 		$this->developerKey = (string)$config->{"developer-key"};
-		foreach ($config->xpath("layers/layer") as $child) {
+
+		/* load the names of connector classes and which files they are in */
+		foreach ($config->xpath("connectors/connector") as $node) {
+			$this->connectors[(string)$node->name] = (string)$node->file;
+		}			
+
+		/* load layers */
+		foreach ($config->xpath("layers/layer") as $node) {
 			$def = new LayerDefinition();
-			$def->name = (string)$child->name;
-			$def->collector = (string)$child->collector;
-			if (isset($child->source->dsn)) {
+			$def->name = (string)$node->name;
+			$def->connector = (string)$node->connector;
+			/* make sure we include the connector's definition */
+			require_once($this->connectors[$def->connector]);
+
+			/* load the data source information */
+			if (isset($node->source->dsn)) {
 				$def->setSourceType(LayerDefinition::DSN);
-				$def->source["dsn"] = (string)$child->source->dsn;
-				if (isset($child->source->username)) {
-					$def->source["username"] = (string)$child->source->username;
+				$def->source["dsn"] = (string)$node->source->dsn;
+				if (isset($node->source->username)) {
+					$def->source["username"] = (string)$node->source->username;
 				}
-				if (isset($child->source->password)) {
-					$def->source["password"] = (string)$child->source->password;
+				if (isset($node->source->password)) {
+					$def->source["password"] = (string)$node->source->password;
 				}
 			} else {
-				$def->source = (string)$child->source;
+				$def->source = (string)$node->source;
 			}
 			$this->layerDefinitions[] = $def;
 		}
@@ -81,7 +95,11 @@ class PorPOISeConfig {
 	/**
 	 * Save config to XML
 	 *
-	 * @param bool $asString Return XML as string instead of saving to file
+	 * For saving the configuration to the config file the file must be
+	 * writable. Only do this on a trusted environment because a writable
+	 * config file is a security hazard.
+	 *
+	 * @param bool $asString Return XML as string instead of saving to file.
 	 *
 	 * @return mixed Number of bytes written when writing to a file, XML
 	 * string when saveing as a string. FALSE on failure
@@ -90,36 +108,32 @@ class PorPOISeConfig {
 		$dom = new DOMDocument("1.0", "UTF-8");
 		$dom->formatOutput = TRUE;
 
-		$root = $dom->createElement("porpoise-configuration");
-		$dom->appendChild($root);
+		$root = $dom->appendChild($dom->createElement("porpoise-configuration"));
 		
-		$id = $dom->createElement("developer-id", $this->developerID);
-		$root->appendChild($id);
-		$key = $dom->createElement("developer-key", $this->developerKey);
-		$root->appendChild($key);
-		$layers = $dom->createElement("layers");
-		$root->appendChild($layers);
+		$root->appendChild($dom->createElement("developer-id", $this->developerID));
+		$root->appendChild($dom->createElement("developer-key", $this->developerKey));
+
+		$connectors = $root->appendChild($dom->createElement("connectors"));
+		foreach ($this->connectors as $name => $file) {
+			$connector = $connectors->appendChild($dom->createElement("connector"));
+			$connector->appendChild($dom->createElement("name", $name));
+			$connector->appendChild($dom->createElement("file", $file));
+		}
+
+		$layers = $root->appendChild($dom->createElement("layers"));
 		foreach ($this->layerDefinitions as $layerDefinition) {
-			$layer = $dom->createElement("layer");
-			$layers->appendChild($layer);
-			$name = $dom->createElement("name", $layerDefinition->name);
-			$layer->appendChild($name);
-			$collector = $dom->createElement("collector", $layerDefinition->collector);
-			$layer->appendChild($collector);
-			$source = $dom->createElement("source");
-			$layer->appendChild($source);
+			$layer = $layers->appendChild($dom->createElement("layer"));
+			$layer->appendChild($dom->createElement("name", $layerDefinition->name));
+			$layer->appendChild($dom->createElement("connector", $layerDefinition->connector));
+			$source = $layer->appendChild($dom->createElement("source"));
 			switch($layerDefinition->getSourceType()) {
 			case LayerDefinition::DSN:
-				$dsn = $dom->createElement("dsn", $layerDefinition->source["dsn"]);
-				$source->appendChild($dsn);
-				$username = $dom->createElement("username", $layerDefinition->source["username"]);
-				$source->appendChild($username);
-				$password = $dom->createElement("password", $layerDefinition->source["password"]);
-				$source->appendChild($password);
+				$source->appendChild($dom->createElement("dsn", $layerDefinition->source["dsn"]));
+				$source->appendChild($dom->createElement("username", $layerDefinition->source["username"]));
+				$source->appendChild($dom->createElement("password", $layerDefinition->source["password"]));
 				break;
 			case LayerDefinition::FILE:
-				$filename = $dom->createTextNode($layerDefinition->source);
-				$source->appendChild($filename);
+				$source->appendChild($dom->createTextNode($layerDefinition->source));
 				break;
 			default:
 				throw new Exception(sprintf("Invalid source type in configuration: %d\n", $layerDefinition->getSourceType()));
@@ -149,8 +163,8 @@ class LayerDefinition {
 	public $name;
 	/** @var mixed Layer source */
 	public $source;
-	/** @var string Name of collector class */
-	public $collector;
+	/** @var string Name of connector class */
+	public $connector;
 
 	/** @var int Source type */
 	protected $sourceType = self::FILE;

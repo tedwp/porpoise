@@ -10,7 +10,7 @@
  */
 
 /**
- * POI collector from SQL databases
+ * POI connector from SQL databases
  *
  * @package PorPOISe
  */
@@ -21,9 +21,9 @@
 require_once("poi.class.php");
 
 /**
- * Requires POICollector interface
+ * Requires POIConnector class
  */
-require_once("poicollector.interface.php");
+require_once("poiconnector.class.php");
 
 /**
  * Requires GeoUtils
@@ -31,11 +31,11 @@ require_once("poicollector.interface.php");
 require_once("geoutil.class.php");
 
 /**
- * POI collector from SQL databases
+ * POI connector from SQL databases
  *
  * @package PorPOISe
  */
-class SQLPOICollector implements POICollector {
+class SQLPOIConnector extends POIConnector {
 	/** @var string DSN */
 	protected $source;
 	/** @var string username */
@@ -80,33 +80,53 @@ class SQLPOICollector implements POICollector {
 	}
 
 	/**
+	 * Build SQL query based on $filter
+	 *
+	 * @param Filter $filter
+	 *
+	 * @return string
+	 */
+	protected function buildQuery(Filter $filter = NULL) {
+		if (empty($filter)) {
+			$sql = "SELECT * FROM POI";
+		} else {
+			$sql = "SELECT *, " . GeoUtil::EARTH_RADIUS . " * 2 * asin(
+				sqrt(
+					pow(sin((radians(" . addslashes($filter->lat) . ") - radians(lat)) / 2), 2)
+					+
+					cos(radians(" . addslashes($filter->lat) . ")) * cos(radians(lat)) * pow(sin((radians(" . addslashes($filter->lon) . ") - radians(lon)) / 2), 2)
+				)
+			) AS distance
+			FROM POI";
+			if (!empty($filter->radius)) {
+				$sql .= "HAVING distance < (" . addslashes($filter->radius) . " + " . addslashes($filter->accuracy) . ")";
+			}
+		}
+
+		return $sql;
+	}
+		
+
+	/**
 	 * Get POIs
 	 *
-	 * @param float $lat
-	 * @param float $lon
-	 * @param int $radius
-	 * @param int $accuracy
-	 * @param array $options
+	 * @param Filter $filter
 	 *
 	 * @return POI[]
 	 *
 	 * @throws Exception
 	 */
-	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
+	public function getPOIs(Filter $filter = NULL) {
+		if (!empty($filter)) {
+			$lat = $filter->lat;
+			$lon = $filter->lon;
+			$radius = $filter->radius;
+			$accuracy = $filter->accuracy;
+		}
+
 		try {
 			$pdo = $this->getPDO();
-			$sql = "SELECT *, " . GeoUtil::EARTH_RADIUS . " * 2 * asin(
-				sqrt(
-					pow(sin((radians(" . addslashes($lat) . ") - radians(lat)) / 2), 2)
-					+
-					cos(radians(" . addslashes($lat) . ")) * cos(radians(lat)) * pow(sin((radians(" . addslashes($lon) . ") - radians(lon)) / 2), 2)
-				)
-			) AS distance
-			FROM POI";
-			/* new in Layar 3: flexible radius */
-			if (!empty($radius)) {
-				$sql .= "HAVING distance < (" . addslashes($radius) . " + " . addslashes($accuracy) . ")";
-			}
+			$sql = $this->buildQuery($filter);
 			$stmt = $pdo->prepare($sql);
 			$stmt->execute();
 			$pois = array();
@@ -146,7 +166,10 @@ class SQLPOICollector implements POICollector {
 				} else {
 					throw new Exception("Invalid dimension: " . $row["dimension"]);
 				}
-				$result[] = $poi;
+
+				if ($this->passesFilter($poi, $filter)) {
+					$result[] = $poi;
+				}
 			}
 
 			return $result;

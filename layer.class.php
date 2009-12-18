@@ -34,8 +34,8 @@ class Layer {
 	public $developerKey;
 	public $layerName;
 	
-	/** @var POICollector */
-	protected $poiCollector;
+	/** @var POIConnector */
+	protected $poiConnector;
 
 	// state variables for returning POI information
 	protected $nearbyPOIs;
@@ -56,12 +56,12 @@ class Layer {
 	}
 
 	/**
-	 * Set a POI collector
+	 * Set a POI connector
 	 *
-	 * @param POICollector $poiCollector
+	 * @param POIConnector $poiConnector
 	 */
-	public function setPOICollector(POICollector $poiCollector) {
-		$this->poiCollector = $poiCollector;
+	public function setPOIConnector(POIConnector $poiConnector) {
+		$this->poiConnector = $poiConnector;
 	}
 
 	/**
@@ -76,18 +76,14 @@ class Layer {
 	/**
 	 * Determines nearby POIs and stores them for later use
 	 *
-	 * @param float $lat Latitude of user's position
-	 * @param float $lon Longitude of user's position
-	 * @param int $radius Radius of user's view in meters
-	 * @param int $accuracy Accuracy of user's GPS location in meters
-	 * @param array $options Extra options (RADIOBOX, SEARCHBOX, CUSTOM_SLIDER, pageKey)
+	 * Filter $filter
 	 *
 	 * @return void
 	 */
-	public function determineNearbyPOIs($lat, $lon, $radius, $accuracy, $options) {
+	public function determineNearbyPOIs(Filter $filter) {
 		$this->nearbyPOIs = array();
-		if (!empty($this->poiCollector)) {
-			$this->nearbyPOIs = $this->poiCollector->getPOIs($lat, $lon, $radius, $accuracy, $options);
+		if (!empty($this->poiConnector)) {
+			$this->nearbyPOIs = $this->poiConnector->getPOIs($filter);
 		}
 		$this->hasMorePOIs = FALSE;
 		$this->nextPageKey = NULL;

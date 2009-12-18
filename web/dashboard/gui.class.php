@@ -196,7 +196,7 @@ HTML;
 		}
 		$result = "";
 		$result .= sprintf("<p>Layer name: %s</p>\n", $layerName);
-		$result .= sprintf("<p>POI collector: %s</p>\n", $layerDefinition->collector);
+		$result .= sprintf("<p>POI connector: %s</p>\n", $layerDefinition->connector);
 		$result .= sprintf("<p><a href=\"?action=newPOI&layerName=%s\">New POI</a></p>\n", urlencode($layerName));
 		$result .= self::createPOITable($layerName);
 		return $result;
