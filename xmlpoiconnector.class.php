@@ -64,6 +64,20 @@ class XMLPOIConnector extends POIConnector {
 	}
 
 	/**
+	 * Provides an XPath query for finding POIs in the source file.
+	 *
+	 * For relative queries, the context node is the root element.
+	 * This method can be overridden to use a different query.
+	 *
+	 * @param Filter $filter
+	 * 
+	 * @return string
+	 */
+	public function getQuery(Filter $filter = NULL) {
+		return "poi";
+	}
+
+	/**
 	 * Get POIs
 	 *
 	 * @param Filter $filter
@@ -91,7 +105,8 @@ class XMLPOIConnector extends POIConnector {
 
 		$result = array();
 
-		foreach ($simpleXML->poi as $poiData) {
+		$xpathQuery = $this->getQuery($filter);
+		foreach ($simpleXML->xpath($xpathQuery) as $poiData) {
 			if (empty($poiData->dimension) || (int)$poiData->dimension == 1) {
 				$poi = new POI1D();
 			} else if ((int)$poiData->dimension == 2) {
