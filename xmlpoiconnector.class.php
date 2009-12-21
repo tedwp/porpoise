@@ -339,4 +339,25 @@ class XMLPOIConnector extends POIConnector {
 		}
 		return $xslProcessor->transformToXml($xml);
 	}
+
+	/**
+	 * Set an option
+	 *
+	 * XMLPOIConnector supports one option, "stylesheet"
+	 *
+	 * @param string $optionName
+	 * @param string $optionValue
+	 *
+	 * @return void
+	 */
+	public function setOption($optionName, $optionValue) {
+		switch ($optionName) {
+		case "stylesheet":
+			$this->setStyleSheet($optionValue);
+			break;
+		default:
+			parent::setOption($optionName, $optionValue);
+			break;
+		}
+	}
 }

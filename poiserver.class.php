@@ -426,6 +426,9 @@ class LayarPOIServerFactory {
 			} else {
 				$poiConnector = new $definition->connector($definition->source);
 			}
+			foreach ($definition->connectorOptions as $optionName => $option) {
+				$poiConnector->setOption($optionName, $option);
+			}
 			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}

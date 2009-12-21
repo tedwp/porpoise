@@ -197,6 +197,17 @@ HTML;
 		$result = "";
 		$result .= sprintf("<p>Layer name: %s</p>\n", $layerName);
 		$result .= sprintf("<p>POI connector: %s</p>\n", $layerDefinition->connector);
+		$result .= sprintf("<p>Connector options:\n");
+		if (!empty($layerDefinition->connectorOptions)) {
+			$result .= "<ul>\n";
+			foreach ($layerDefinition->connectorOptions as $optionName => $optionValue) {
+				$result .= sprintf("<li>%s: %s</li>\n", $optionName, $optionValue);
+			}
+			$result .= "</ul>\n";
+		} else {
+			$result .= "none\n";
+		}
+		$result .= "</p>\n";
 		$result .= sprintf("<p><a href=\"?action=newPOI&layerName=%s\">New POI</a></p>\n", urlencode($layerName));
 		$result .= self::createPOITable($layerName);
 		return $result;

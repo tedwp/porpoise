@@ -71,9 +71,18 @@ class PorPOISeConfig {
 		foreach ($config->xpath("layers/layer") as $node) {
 			$def = new LayerDefinition();
 			$def->name = (string)$node->name;
-			$def->connector = (string)$node->connector;
+			$def->connector = trim((string)$node->connector);
+			if (!empty($node->connector->options)) {
+				foreach ($node->connector->options->children() as $optionNode) {
+					$def->connectorOptions[$optionNode->getName()] = (string)$optionNode;
+				}
+			}
 			/* make sure we include the connector's definition */
-			require_once($this->connectors[$def->connector]);
+			if (!empty($this->connectors[$def->connector])) {
+				require_once($this->connectors[$def->connector]);
+			} else {
+				throw new Exception(sprintf("Unknown connector: %s", $def->connector));
+			}
 
 			/* load the data source information */
 			if (isset($node->source->dsn)) {
@@ -124,7 +133,10 @@ class PorPOISeConfig {
 		foreach ($this->layerDefinitions as $layerDefinition) {
 			$layer = $layers->appendChild($dom->createElement("layer"));
 			$layer->appendChild($dom->createElement("name", $layerDefinition->name));
-			$layer->appendChild($dom->createElement("connector", $layerDefinition->connector));
+			$connector = $layer->appendChild($dom->createElement("connector", $layerDefinition->connector));
+			foreach ($layerDefinition->connectorOptions as $key => $value) {
+				$connector->appendChild($dom->createElement($key, $value));
+			}
 			$source = $layer->appendChild($dom->createElement("source"));
 			switch($layerDefinition->getSourceType()) {
 			case LayerDefinition::DSN:
@@ -165,6 +177,8 @@ class LayerDefinition {
 	public $source;
 	/** @var string Name of connector class */
 	public $connector;
+	/** @var array Connector-specific options */
+	public $connectorOptions = array();
 
 	/** @var int Source type */
 	protected $sourceType = self::FILE;
