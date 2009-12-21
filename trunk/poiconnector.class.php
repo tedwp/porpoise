@@ -69,6 +69,22 @@ abstract class POIConnector {
 	public abstract function deletePOI($poiID);
 
 	/**
+	 * Set a (connector-specific) option
+	 *
+	 * Connectors with specific options, such as an XML stylesheet, should
+	 * override this method to handle those options but always call the
+	 * parent method for unknown options.
+	 *
+	 * @param string $optionName
+	 * @param string $optionValue
+	 *
+	 * @return void
+	 */
+	public function setOption($optionName, $optionValue) {
+		/* no generic options defined as of yet */
+	}
+
+	/**
 	 * Determines whether a POI passes the supplied filter options
 	 *
 	 * @param POI $poi

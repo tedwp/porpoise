@@ -26,6 +26,16 @@ Sample XML layer configuration
   </layer>
 -->
 <!--
+Sample XML+XSL layer configuration
+  <layer>
+   <name>example</name>
+   <connector>XMLPOIConnector
+    <options><stylesheet>xsl/yoursheet.xsl</stylesheet></options>
+	 </connector>
+   <source>example.xml</source>
+  </layer>
+-->
+<!--
 Sample database layer configuration
   <layer>
    <name>example</name>
