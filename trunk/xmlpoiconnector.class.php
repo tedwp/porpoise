@@ -73,7 +73,7 @@ class XMLPOIConnector extends POIConnector {
 	 * 
 	 * @return string
 	 */
-	public function getQuery(Filter $filter = NULL) {
+	public function buildQuery(Filter $filter = NULL) {
 		return "poi";
 	}
 
@@ -105,7 +105,7 @@ class XMLPOIConnector extends POIConnector {
 
 		$result = array();
 
-		$xpathQuery = $this->getQuery($filter);
+		$xpathQuery = $this->buildQuery($filter);
 		foreach ($simpleXML->xpath($xpathQuery) as $poiData) {
 			if (empty($poiData->dimension) || (int)$poiData->dimension == 1) {
 				$poi = new POI1D();
