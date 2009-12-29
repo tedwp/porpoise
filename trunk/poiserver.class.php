@@ -128,7 +128,7 @@ class LayarPOIServer {
 		}
 
 		/* Set the proper content type */
-		header("Content-Type: text/javascript");
+		header("Content-Type: application/json");
 
 		printf("%s", json_encode($response));
 	}
@@ -261,7 +261,7 @@ class LayarPOIServer {
 		}
 
 		if (!empty($_COOKIE["porpoiseUID"])) {
-			$filter->uid = $_COOKIE["porpoiseUID"];
+			$result->uid = $_COOKIE["porpoiseUID"];
 		}
 
 		return $result;

@@ -97,6 +97,18 @@ class PorPOISeConfig {
 			} else {
 				$def->source = (string)$node->source;
 			}
+			
+			/* load OAuth settings */
+			if (isset($node->oauth)) {
+				$oauth = $def->oauth;
+				$oauth->setConsumerKey((string)$node->oauth->consumer_key);
+				$oauth->setSecretKey((string)$node->oauth->secret_key);
+				$baseUrl = (string)$node->oauth->baseUrl;
+				$oauth->setRequestTokenUrl($baseUrl . (string)$node->oauth->tokenPath->request);
+				$oauth->setAccessTokenUrl($baseUrl . (string)$node->oauth->tokenPath->access);
+				$oauth->setAuthorizeTokenUrl($baseUrl . (string)$node->oauth->tokenPath->authorize);
+			}
+			
 			$this->layerDefinitions[] = $def;
 		}
 	}
@@ -179,9 +191,15 @@ class LayerDefinition {
 	public $connector;
 	/** @var array Connector-specific options */
 	public $connectorOptions = array();
+	/** @var array OAuth options */
+	public $oauth = null;
 
 	/** @var int Source type */
 	protected $sourceType = self::FILE;
+	
+	public function __construct() {
+		$this->oauth = new OAuthSetup();
+	}
 
 	/**
 	 * Set source type of this layer
@@ -218,4 +236,113 @@ class LayerDefinition {
 	public function getSourceType() {
 		return $this->sourceType;
 	}
+}
+
+/**
+ * Class for holding OAuth credentials and params
+ * 
+ * @package PorPOISe
+ */
+class OAuthSetup {
+	protected $consumerKey = null;
+	protected $secretKey = null;
+	protected $requestTokenUrl = '';
+	protected $accessTokenUrl = '';
+	protected $authorizeTokenUrl = '';
+	
+    /**
+     * Returns $accessTokenUrl.
+     * @see OAuthSetup::$accessTokenUrl
+     */
+    public function getAccessTokenUrl()
+    {
+        return $this->accessTokenUrl;
+    }
+    
+    /**
+     * Sets $accessTokenUrl.
+     * @param object $accessTokenUrl
+     * @see OAuthSetup::$accessTokenUrl
+     */
+    public function setAccessTokenUrl($accessTokenUrl)
+    {
+        $this->accessTokenUrl = $accessTokenUrl;
+    }
+    
+    /**
+     * Returns $authorizeTokenUrl.
+     * @see OAuthSetup::$authorizeTokenUrl
+     */
+    public function getAuthorizeTokenUrl()
+    {
+        return $this->authorizeTokenUrl;
+    }
+    
+    /**
+     * Sets $authorizeTokenUrl.
+     * @param object $authorizeTokenUrl
+     * @see OAuthSetup::$authorizeTokenUrl
+     */
+    public function setAuthorizeTokenUrl($authorizeTokenUrl)
+    {
+        $this->authorizeTokenUrl = $authorizeTokenUrl;
+    }
+    
+    /**
+     * Returns $consumerKey.
+     * @see OAuthSetup::$consumerKey
+     */
+    public function getConsumerKey()
+    {
+        return $this->consumerKey;
+    }
+    
+    /**
+     * Sets $consumerKey.
+     * @param object $consumerKey
+     * @see OAuthSetup::$consumerKey
+     */
+    public function setConsumerKey($consumerKey)
+    {
+        $this->consumerKey = $consumerKey;
+    }
+    
+    /**
+     * Returns $requestTokenUrl.
+     * @see OAuthSetup::$requestTokenUrl
+     */
+    public function getRequestTokenUrl()
+    {
+        return $this->requestTokenUrl;
+    }
+    
+    /**
+     * Sets $requestTokenUrl.
+     * @param object $requestTokenUrl
+     * @see OAuthSetup::$requestTokenUrl
+     */
+    public function setRequestTokenUrl($requestTokenUrl)
+    {
+        $this->requestTokenUrl = $requestTokenUrl;
+    }
+    
+    /**
+     * Returns $secretKey.
+     * @see OAuthSetup::$secretKey
+     */
+    public function getSecretKey()
+    {
+        return $this->secretKey;
+    }
+    
+    /**
+     * Sets $secretKey.
+     * @param object $secretKey
+     * @see OAuthSetup::$secretKey
+     */
+    public function setSecretKey($secretKey)
+    {
+        $this->secretKey = $secretKey;
+    }
+
 }
