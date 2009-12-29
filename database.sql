@@ -91,6 +91,26 @@ CREATE TABLE `Transform` (
   `scale` float default NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
+
+
+
+-- 
+-- Table structure for table `User`
+-- 
+
+CREATE TABLE `User` (
+  `id` varchar(64) collate utf8_unicode_ci NOT NULL default '' COMMENT 'value of auth cookie for Layar app',
+  `layar_uid` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Unique phone ID, optional',
+  `app_uid` int(10) unsigned default NULL COMMENT 'Native app user ID',
+  `app_user_name` varchar(64) collate utf8_unicode_ci default NULL COMMENT 'Native app user name',
+  `oauth_token` varchar(64) collate utf8_unicode_ci default NULL,
+  `oauth_token_secret` varchar(64) collate utf8_unicode_ci default NULL,
+  `updated` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`),
+  KEY `app_uid` (`app_uid`),
+  KEY `layar_uid` (`layar_uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Stores oAuth tokens and basic user data';
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
