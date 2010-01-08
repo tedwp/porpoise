@@ -1,4 +1,4 @@
-#summary Explain how te create your own filters
+#summary Explains how to create your own filters
 = Introduction =
 
 Layar allows you to add filters to your layer, such as search boxes, sliders and radio buttons. Whatever the users enters into these filter values is sent to PorPOISe. PorPOISe however does nothing with these values out-of-the box because it does not know how to interpret them in relation to the data you are offering through your layer. If you want to use filter values in your layer you will have to write your own custom `POIConnector`. Don't fret though, PorPOISe is structured so that you can use existing `POIConnector`s and only write some simple tests to create a working filter. I will explain below all the steps you need. To make this example work, you need to have already have layer you can experiment with that contains a few POIs near you so you can see the effect your filters have. The example uses an `XMLPOIConnector` but you can use `FlatPOIConnector` or `SQLPOIConnector` by substituting those names wherever it says `XMLPOIConnector`.
