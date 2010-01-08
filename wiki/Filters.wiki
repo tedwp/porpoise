@@ -39,7 +39,7 @@ If everything went OK, your layer looks exactly the same as it did before. This 
 Reload the layer on your phone or the API test page and you will see that a search box has been added to the available filters. Entering a value will not do anything though, so let's do something about that. Suppose we want to filter depending on the value that the user entered in the search box: if there's nothing there, we show everything, but is the user entered something, we will only show POIs that contain the search string in the title or in one of the extra lines 2, 3 or 4. To do this, open "mypoiconnector.class.php" again and add the following code between the accolades:
 
 {{{
-	public function passesFilter(POI $poi, Filter $filter) {
+	public function passesFilter(POI $poi, Filter $filter = NULL) {
 		if (empty($filter->searchbox1)) {
 			return TRUE;
 		}
@@ -102,7 +102,7 @@ class MyPOIConnector extends XMLPOIConnector {
 	/*
 	 * Our custom passesFilter() method
 	 */
-	public function passesFilter(POI $poi, Filter $filter) {
+	public function passesFilter(POI $poi, Filter $filter = NULL) {
 		/*
 		 * If the searchbox value is empty, we do not apply a filter but
 		 * return all POIs, so passesFilter() always returns TRUE for
