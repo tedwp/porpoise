@@ -4,11 +4,13 @@ function usage() {
 	printf("%s\n",
 <<<OUT
 Usage (command line): php crypt.php <arg1> <arg2> ...
-Usage (web): crypt.php?arg=<arg1>&arg=<arg2>&...
+Usage (web): crypt.php?user1=<pass1>&user2=<pass2>&...
 
 Outputs all arguments after running them through crypt() with no
 second argument. When calling through the web the name of the arguments
-does not really matter, every GET parameter is processed and printed.
+does not really matter but you can use the user name for reference.
+Every GET (name, value) parameter is processed and printed as PHP code
+suitable for cut and pasting into users.inc.php.
 OUT
 	);
 }
@@ -27,6 +29,6 @@ if (count($args) == 0) {
 	exit(1);
 }
 
-foreach ($args as $arg) {
-	printf("%s\n", crypt($arg));
+foreach ($args as $user => $pass) {
+	printf("\$_access[\"%s\"] = '%s';\n", $user, crypt($pass));
 }
