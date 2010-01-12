@@ -26,7 +26,7 @@ require_once("user.class.php");
 /**
  * Basic web app, handlers OAuth login, logout and persistence.
  * Extend for application specific purposes.
- * 
+ *
  * @package PorPOISe
  */
 class WebApp {
@@ -34,12 +34,12 @@ class WebApp {
 
 	protected $http; // OAuth aware http object
 	protected $user; // User persistence object
-	
+
 	private $sessionStarted = false;
-	
+
 	/**
 	 * Initialize WebApp, Http and User classes
-	 * @return void 
+	 * @return void
 	 * @param LayerDefinition $definition
 	 */
 	public function __construct(LayerDefinition $definition) {
@@ -59,12 +59,12 @@ class WebApp {
 		if (!@session_start()) {
 			throw new Exception('Could not initialize new session', 500);
 		}
-		$this->sessionStarted = true;	
+		$this->sessionStarted = true;
 	}
-	
+
 	/**
 	* Initialize OAuth aware HTTP requester, get parameters from OAuthSetup
-	* @return EpiOAuth $http  
+	* @return EpiOAuth $http
 	* @param OAuthSetup $oauthSetup
 	*/
 	private function httpInit(OAuthSetup $oauthSetup) {
@@ -76,20 +76,20 @@ class WebApp {
 
 	/**
 	 * initialize private User persistence object
-	 * @return void 
+	 * @return void
 	 * @param LayerDefinition $definition
 	 */
 	private function userInit(LayerDefinition $definition) {
 
 		// get data source.
 		// NOTE: only Database persistence implemented for now
-		if ('SQLPOIConnector' === (string)$definition->connector) {
+		if ($definition->getSourceType() === LayerDefinition::DSN) {
 			$source = $definition->source;
 			$this->user = new DbUser($source['dsn'], $source['username'], $source['password']);
 		} else {
 			$this->user = new DummyUser();
 		}
-		
+
 		// try session
 		if (isset($_SESSION[$this->layerName . 'User'])) {
 			$this->user->fromJson($_SESSION[$this->layerName . 'User']);
@@ -99,13 +99,13 @@ class WebApp {
 			$this->user->getById($_COOKIE[$this->layerName . 'Id']);
 			$_SESSION[$this->layerName . 'User'] = $this->user->toJson();
 		}
-	}	
+	}
 
 	/**
 	 * Main entry point, dispatch web requests according to 'action' parameter.
 	 * All public methods of subclass are callable as action.
-	 *  
-	 * @return void 
+	 *
+	 * @return void
 	 */
 	public function handleRequest() {
 		$action = (string)$_REQUEST['action'];
@@ -162,18 +162,18 @@ class WebApp {
 		);
 		$this->render($view);
 	}
-	
+
 	/**
 	 * Render view with template, output HTML
 	 * @param array $view
-	 * 
+	 *
 	 * @todo override template class per layer name
 	 */
 	protected function render(array $view) {
-		$user = $this->user->getApp_user_name(); 
+		$user = $this->user->getApp_user_name();
 		if ($user) {
 			$view['user'] = $user;
-			$view['logout'] = $this->getActionUrl('logout'); 
+			$view['logout'] = $this->getActionUrl('logout');
 		} else {
 			$view['login'] = $this->getActionUrl('login');
 		}
@@ -181,14 +181,14 @@ class WebApp {
 	}
 
 	/**
-	 * 
-	 * @return string $url link to call action on current layer 
+	 *
+	 * @return string $url link to call action on current layer
 	 * @param object $action
 	 */
 	protected function getActionUrl($action) {
-		$url = sprintf('%s://%s%s?layerName=%s&action=%s', 
+		$url = sprintf('%s://%s%s?layerName=%s&action=%s',
 			(isset($_SERVER['HTTPS']) ? 'https' : 'http'),
-			$_SERVER["HTTP_HOST"], 
+			$_SERVER["HTTP_HOST"],
 			$_SERVER['SCRIPT_NAME'],
 			$this->layerName,
 			urlencode($action)
@@ -197,12 +197,12 @@ class WebApp {
 	}
 
 	/**
-	 * First stage OAuth login action 
+	 * First stage OAuth login action
 	 * @return array $view
-	 * 
+	 *
 	 * Example callback redirects:
 	 * http://example.com/PorPOISe/web/web.php?layerName=linkedin&action=callback&oauth_token=xxyyzz&oauth_verifier=123456
-	 * Some services ignore the callback parem, you have to register the callback url, e.g. 
+	 * Some services ignore the callback parem, you have to register the callback url, e.g.
 	 * http://example.com/PorPOISe/web/web.php?layerName=foursquare&action=callback
 	 */
 	public function login() {
@@ -223,12 +223,12 @@ class WebApp {
 		);
 		return $view;
 	}
-	
+
 	/**
 	 * Second stage OAuth login action,
 	 * Callback called by remote server, persist user data
-	 * 
-	 * @return array $view 
+	 *
+	 * @return array $view
 	 */
 	// oauth_token, oauth_verifier
 	public function callback() {
@@ -253,7 +253,7 @@ class WebApp {
 		);
 		return $view;
 	}
-	
+
 	/**
 	 * Logout action, delete persisted user data
 	 * @return array $view
@@ -261,7 +261,7 @@ class WebApp {
 	public function logout() {
 		$this->session_start();
 		session_destroy();
-		
+
 		// delete from persistent storage
 		if ($this->user) {
 			$this->user->delete();
@@ -270,16 +270,16 @@ class WebApp {
 			'title' => 'Logged Out',
 			'content' => sprintf('Logged out of layer <b>%s</b>', $this->layerName)
 		);
-		return $view;		
+		return $view;
 	}
-	
+
 	/**
 	 * Save common user data.
 	 * Override this function in a child class to add additional user data:
 	 * - app_username
 	 * - app_uid
 	 * - layar_uid
-	 * 
+	 *
 	 * @return void
 	 * @param object $token {oauth_token, oauth_token_secret}
 	 */
@@ -287,28 +287,28 @@ class WebApp {
 		$this->user->setOauth_token($token->oauth_token);
 		$this->user->setOauth_token_secret($token->oauth_token_secret);
 		$this->user->save();
-		
+
 		$id = $this->user->getId();
-		
+
 		// set UID cookie
 		$exp = time() + 3600*24*365*2; // Expire after two years
 		setcookie($this->layerName . 'Id', $id, $exp, '/');
-		
+
 		// save serialized data to session
 		$_SESSION[$this->layerName . 'User'] = $this->user->toJson();
 	}
-	
+
 	/**
 	 * Initialize http object with OAuth tokens.
 	 * Retrieves OAuth token from User object or Session if argument is empty.
 	 * Throws exception on failure.
-	 * 
+	 *
 	 * @return object $token {oauth_token, oauth_token_secret}
 	 * @param object $token[optional]
 	 */
 	protected function initToken($token = null) {
 		$this->session_start();
-		
+
 		if (empty($token)) {
 			// restore from User object
 			if ($this->user && $this->user->getOauth_token()) {
@@ -321,7 +321,7 @@ class WebApp {
 				$token = $_SESSION['token'];
 			}
 		}
-		
+
 		// persist token in session
 		if (!empty($token)) {
 			$_SESSION['token'] = (object) array(
@@ -331,12 +331,12 @@ class WebApp {
 		} else {
 			throw new Exception('Missing OAuth token', 500);
 		}
-		
+
 		// set user tokens for OAuth request
 		$this->http->setToken($token->oauth_token, $token->oauth_token_secret);
 		return $token;
 	}
-	
+
 
 } // WebApp
 
@@ -345,11 +345,11 @@ class WebApp {
 
 class WebAppServer {
 	protected $webApps = array();
-	
+
 	public function __construct() {
-		
+
 	}
-	
+
 	public function handleRequest() {
 		if (isset($this->webApps[$_REQUEST['layerName']])) {
 			$app = $this->webApps[$_REQUEST['layerName']];
@@ -358,11 +358,11 @@ class WebAppServer {
 			throw new Exception('No such layer', 401);
 		}
 	}
-	
+
 	public function addWebApp($webApp) {
 		$this->webApps[$webApp->layerName] = $webApp;
 	}
-	
+
 }
 
 
@@ -373,11 +373,11 @@ class WebAppServer {
  */
 
 class WebAppServerFactory {
-	
+
 	protected function __construct() {
-		
+
 	}
-	
+
 	protected function createServerFromLayerDefinitions(array $definitions) {
 		$result = new WebAppServer();
 		foreach ($definitions as $definition) {
@@ -394,10 +394,10 @@ class WebAppServerFactory {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * initialize a new WebAppServer
-	 * Create a new web app for every definition and add it to the WebAppServer 
+	 * Create a new web app for every definition and add it to the WebAppServer
 	 * @return $server WebAppServer
 	 * @param object $definitions
 	 */
@@ -405,5 +405,5 @@ class WebAppServerFactory {
 		$factory = new self();
 		return $factory->createServerFromLayerDefinitions($config->layerDefinitions);
 	}
-	
+
 }
