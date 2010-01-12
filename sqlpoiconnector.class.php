@@ -99,8 +99,9 @@ class SQLPOIConnector extends POIConnector {
 			) AS distance
 			FROM POI";
 			if (!empty($filter->radius)) {
-				$sql .= "HAVING distance < (" . addslashes($filter->radius) . " + " . addslashes($filter->accuracy) . ")";
+				$sql .= " HAVING distance < (" . addslashes($filter->radius) . " + " . addslashes($filter->accuracy) . ")";
 			}
+			$sql .= " ORDER BY distance ASC";
 		}
 
 		return $sql;

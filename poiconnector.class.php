@@ -92,7 +92,7 @@ abstract class POIConnector {
 	 *
 	 * @return bool
 	 */
-	protected function passesFilter(POI $poi, Filter $filter) {
+	protected function passesFilter(POI $poi, Filter $filter = NULL) {
 		return TRUE;
 	}
 }

@@ -4,9 +4,12 @@
  * PorPOISe
  * Copyright 2009 SURFnet BV
  * Released under a permissive license (see LICENSE)
+ */
+
+/**
+ * Classes for holding user data for personalized web apps
  *
- * Acknowledgments:
- * Jerouris for the UTF-8 fix
+ * @package PorPOISe
  */
 
 /**
