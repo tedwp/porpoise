@@ -235,8 +235,13 @@ class LayarPOIServer {
 				$result->radiolist = $value;
 				break;
 			case "SEARCHBOX":
-			case "SEARCHBOX_1":
 				$result->searchbox1 = $value;
+				break;
+			case "SEARCHBOX_1":
+				/* special case: if SEARCHBOX and SEARCHBOX_1 are set, SEARCHBOX takes precedence */
+				if (empty($_REQUEST["SEARCHBOX"])) {
+					$result->searchbox1 = $value;
+				}
 				break;
 			case "SEARCHBOX_2":
 				$result->searchbox2 = $value;
@@ -245,8 +250,13 @@ class LayarPOIServer {
 				$result->searchbox3 = $value;
 				break;
 			case "CUSTOM_SLIDER":
-			case "CUSTOM_SLIDER_1":
 				$result->customSlider1 = (float)$value;
+				break;
+			case "CUSTOM_SLIDER_1":
+				/* special case: if CUSTOM_SLIDER and CUSTOM_SLIDER_1 are set, CUSTOM_SLIDER takes precedence */
+				if (empty($_REQUEST["CUSTOM_SLIDER"])) {
+					$result->customSlider1 = (float)$value;
+				}
 				break;
 			case "CUSTOM_SLIDER_2":
 				$result->customSlider2 = (float)$value;
@@ -260,8 +270,8 @@ class LayarPOIServer {
 			}
 		}
 
-		if (!empty($_COOKIE["porpoiseUID"])) {
-			$result->uid = $_COOKIE["porpoiseUID"];
+		if (!empty($_COOKIE[$_REQUEST["layerName"] . "Id"])) {
+			$result->porpoiseUID = $_COOKIE[$_REQUEST["layerName"] . "Id"];
 		}
 
 		return $result;
