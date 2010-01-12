@@ -340,9 +340,11 @@ class WebApp {
 
 } // WebApp
 
-
-
-
+/**
+ * Server for WebApp
+ *
+ * @package PorPOISe
+ */
 class WebAppServer {
 	protected $webApps = array();
 

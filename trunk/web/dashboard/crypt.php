@@ -1,5 +1,23 @@
 <?php
 
+/*
+ * PorPOISe
+ * Copyright 2009 SURFnet BV
+ * Released under a permissive license (see LICENSE)
+ */
+
+/**
+ * Helper script for creating crypt()-hashes of passwords
+ *
+ * @package PorPOISe
+ * @subpackage Dashboard
+ */
+
+/**
+ * Prints usage information
+ *
+ * @return void
+ */
 function usage() {
 	printf("%s\n",
 <<<OUT
