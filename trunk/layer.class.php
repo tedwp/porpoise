@@ -88,20 +88,21 @@ class Layer {
 		$this->hasMorePOIs = FALSE;
 		$this->nextPageKey = NULL;
 
-		if (isset($options["pageKey"])) {
-			$offset = $options["pageKey"] * self::POIS_PER_PAGE;
-			if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
-				$this->hasMorePOIs = TRUE;
-				$this->nextPageKey = $options["pageKey"] + 1;
-			}
+		if (isset($filter->pageKey)) {
+			$offset = $filter->pageKey * self::POIS_PER_PAGE;
 		} else {
 			$offset = 0;
+		}
+		if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
+			$this->hasMorePOIs = TRUE;
+			$this->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
 		}
 		if ($offset > count($this->nearbyPOIs)) {
 			// no POIs on this page
 			$nearbyPOIs = array();
 		} else {
-			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, self::POIS_PER_PAGE);
+			$limit = min(self::POIS_PER_PAGE, count($this->nearbyPOIs) - $offset);
+			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, $limit);
 		}
 	}
 
