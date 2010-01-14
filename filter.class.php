@@ -34,6 +34,8 @@ class LayarFilter extends Filter {
 	public $userID = NULL;
 	/** @var int timestamp Timestamp of the client */
 	public $timestamp = NULL;
+	/** @var string pageKey Page the client requires */
+	public $pageKey = NULL;
 	/** @var float Latitude of the client */
 	public $lat = NULL;
 	/** @var float Longitude of the client */

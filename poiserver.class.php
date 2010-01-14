@@ -221,6 +221,9 @@ class LayarPOIServer {
 			case "userId":
 				$result->userID = $value;
 				break;
+			case "pageKey":
+				$result->pageKey = $value;
+				break;
 			case "timestamp":
 			case "accuracy":
 			case "radius":

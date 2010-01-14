@@ -93,7 +93,7 @@ class FlatPOIConnector extends POIConnector {
 			foreach ($poi as $key => $value) {
 				if (!isset($row[$key])) {
 					// check for non-required values
-					if (in_array($key, array("dimension", "distance", "alt", "relativeAlt"))) {
+					if (in_array($key, array("dimension", "distance", "alt", "relativeAlt", "actions", "imageURL"))) {
 						// start next iteration
 						continue;
 					}
@@ -131,7 +131,7 @@ class FlatPOIConnector extends POIConnector {
 				$result[] = $poi;
 			} else {
 				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($filter)) {
+				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
 					$result[] = $poi;
 				}
 			}
