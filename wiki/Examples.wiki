@@ -1,3 +1,0 @@
-#summary Examples on how to use PorPOISe
-
-  * [Filters]
