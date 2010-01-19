@@ -2,6 +2,7 @@
 #labels Featured
 
 =News=
+  * January 18, 2010: Released PorPOISe 0.7. In this release, the `POICollector` framework has been rewritten. `POICollectors` are now called `POIConnectors` and it is easier to extend them to create your own filters. See the wiki item [Filters] for more info. This release also adds the first support for authenticated layers and integration with third party services that support OAuth, such as Twitter. Take a look at `web-app.class.php` if you want to know more.
   * December 17, 2009: Released PorPOISe 0.51. This adds support for actions to the Dashboard.
   * December 14, 2009: Released PorPOISe 0.5. This release features the first version of a web interface for managing POIs, the Dashboard. Features are limited but you can now view, add and remove POIs through a GUI rather than by editing files directly. Support for adding actions to POIs is still being developed. This release also adds full support for Layar v3 layers, also known as Layar 3D.
   * December 02, 2009: Released PorPOISe 0.3. This release adds support for XSLT transformation to the XMLPOICollector (use the "setStyleSheet" method) and better handling of UTF-8 data through the SQLPOICollector by forcing MySQL to use UTF-8. This should fix problems with diacritic characters. Thanks to all contributors for posting your modifications in the Google Group.
