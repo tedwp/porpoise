@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pois>
+ 
+
+<poi>
+<dimension>3</dimension>
+<alt>0</alt>
+<transform><rel/><angle>0</angle><scale>1</scale></transform>
+<object><baseURL/><full/><reduced/><icon/><size>0</size></object>
+<relativeAlt>0</relativeAlt>
+<action><uri>http://www.nu.nl/</uri><label>testa</label><autoTriggerRange>2</autoTriggerRange><autoTriggerOnly>1</autoTriggerOnly></action>
+<attribution/>
+<distance/>
+<id>1</id>
+<imageURL/>
+<lat>0</lat>
+<lon>0</lon>
+<line2/>
+<line3/>
+<line4/>
+<title/>
+<type>0</type>
+</poi>
+
+</pois>
