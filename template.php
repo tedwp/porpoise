@@ -5,6 +5,12 @@
  * Released under a permissive license (see LICENSE)
  *
  */
+
+/**
+ * Very basic mobile web template
+ *
+ * @package PorPOISe
+ */
  
 /**
  * Very basic mobile web template
