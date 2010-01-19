@@ -7,7 +7,7 @@
  */
 
 /**
- * POI connector from "flat" files
+ * POI collector from "flat" files
  *
  * @package PorPOISe
  */
@@ -18,20 +18,20 @@
 require_once("poi.class.php");
 
 /**
- * Requires POIConnector class
+ * Requires POICollector interface
  */
-require_once("poiconnector.class.php");
+require_once("poicollector.interface.php");
 /**
  * Requires GeoUtil
  */
 require_once("geoutil.class.php");
 
 /**
- * POI connector from "flat" files
+ * POI collector from "flat" files
  *
  * @package PorPOISe
  */
-class FlatPOIConnector extends POIConnector {
+class FlatPOICollector implements POICollector {
 	/** @var string */
 	protected $source;
 	/** @var string */
@@ -52,23 +52,20 @@ class FlatPOIConnector extends POIConnector {
 	/**
 	 * Get POIs
 	 *
-	 * @param Filter $filter
+	 * @param float $lat
+	 * @param float $lon
+	 * @param int $radius
+	 * @param int $accuracy
+	 * @param array $options
 	 *
 	 * @return POI[]
 	 *
 	 * @throws Exception
 	 */
-	public function getPOIs(Filter $filter = NULL) {
+	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
 		$file = @file($this->source);
 		if (empty($file)) {
 			throw new Exception("File not readable or empty");
-		}
-
-		if (!empty($filter)) {
-			$lat = $filter->lat;
-			$lon = $filter->lon;
-			$radius = $filter->radius;
-			$accuracy = $filter->accuracy;
 		}
 
 		$result = array();
@@ -93,7 +90,7 @@ class FlatPOIConnector extends POIConnector {
 			foreach ($poi as $key => $value) {
 				if (!isset($row[$key])) {
 					// check for non-required values
-					if (in_array($key, array("dimension", "distance", "alt", "relativeAlt", "actions", "imageURL"))) {
+					if (in_array($key, array("dimension", "distance", "alt", "relativeAlt"))) {
 						// start next iteration
 						continue;
 					}
@@ -127,13 +124,10 @@ class FlatPOIConnector extends POIConnector {
 				}
 				$poi->$key = $value;
 			}
-			if (empty($filter)) {
+			$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+			/* new in Layar 3: flexible radius */
+			if (empty($radius) || $poi->distance < $radius + $accuracy) {
 				$result[] = $poi;
-			} else {
-				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
-					$result[] = $poi;
-				}
 			}
 		}
 
@@ -148,6 +142,7 @@ class FlatPOIConnector extends POIConnector {
 	 * @return mixed FALSE on failure, TRUE or a string on success
 	 */
 	public function storePOIs(array $pois, $mode = "update", $asString = FALSE) {
+	/** @todo assign id's */
 		$fields = array("actions", "alt", "attribution", "dimension", "id", "imageURL", "lat", "lon", "line2", "line3", "line4", "object", "relativeAlt", "title", "transform", "type");
 		$actionFields = array("label", "uri", "autoTriggerRange", "autoTriggerOnly");
 		$objectFields = array("baseURL", "full", "reduced", "icon", "size");

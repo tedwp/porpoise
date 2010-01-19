@@ -34,8 +34,8 @@ class Layer {
 	public $developerKey;
 	public $layerName;
 	
-	/** @var POIConnector */
-	protected $poiConnector;
+	/** @var POICollector */
+	protected $poiCollector;
 
 	// state variables for returning POI information
 	protected $nearbyPOIs;
@@ -56,12 +56,12 @@ class Layer {
 	}
 
 	/**
-	 * Set a POI connector
+	 * Set a POI collector
 	 *
-	 * @param POIConnector $poiConnector
+	 * @param POICollector $poiCollector
 	 */
-	public function setPOIConnector(POIConnector $poiConnector) {
-		$this->poiConnector = $poiConnector;
+	public function setPOICollector(POICollector $poiCollector) {
+		$this->poiCollector = $poiCollector;
 	}
 
 	/**
@@ -76,33 +76,36 @@ class Layer {
 	/**
 	 * Determines nearby POIs and stores them for later use
 	 *
-	 * Filter $filter
+	 * @param float $lat Latitude of user's position
+	 * @param float $lon Longitude of user's position
+	 * @param int $radius Radius of user's view in meters
+	 * @param int $accuracy Accuracy of user's GPS location in meters
+	 * @param array $options Extra options (RADIOBOX, SEARCHBOX, CUSTOM_SLIDER, pageKey)
 	 *
 	 * @return void
 	 */
-	public function determineNearbyPOIs(Filter $filter) {
+	public function determineNearbyPOIs($lat, $lon, $radius, $accuracy, $options) {
 		$this->nearbyPOIs = array();
-		if (!empty($this->poiConnector)) {
-			$this->nearbyPOIs = $this->poiConnector->getPOIs($filter);
+		if (!empty($this->poiCollector)) {
+			$this->nearbyPOIs = $this->poiCollector->getPOIs($lat, $lon, $radius, $accuracy, $options);
 		}
 		$this->hasMorePOIs = FALSE;
 		$this->nextPageKey = NULL;
 
-		if (isset($filter->pageKey)) {
-			$offset = $filter->pageKey * self::POIS_PER_PAGE;
+		if (isset($options["pageKey"])) {
+			$offset = $options["pageKey"] * self::POIS_PER_PAGE;
+			if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
+				$this->hasMorePOIs = TRUE;
+				$this->nextPageKey = $options["pageKey"] + 1;
+			}
 		} else {
 			$offset = 0;
-		}
-		if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
-			$this->hasMorePOIs = TRUE;
-			$this->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
 		}
 		if ($offset > count($this->nearbyPOIs)) {
 			// no POIs on this page
 			$nearbyPOIs = array();
 		} else {
-			$limit = min(self::POIS_PER_PAGE, count($this->nearbyPOIs) - $offset);
-			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, $limit);
+			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, self::POIS_PER_PAGE);
 		}
 	}
 

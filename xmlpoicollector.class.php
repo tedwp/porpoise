@@ -10,7 +10,7 @@
  */
 
 /**
- * POI connector from XML files
+ * POI collector from XML files
  *
  * @package PorPOISe
  */
@@ -21,20 +21,20 @@
 require_once("poi.class.php");
 
 /**
- * Requires POIConnector class
+ * Requires POICollector interface
  */
-require_once("poiconnector.class.php");
+require_once("poicollector.interface.php");
 /**
  * Requires GeoUtil
  */
 require_once("geoutil.class.php");
 
 /**
- * POI connector from XML files
+ * POI collector from XML files
  *
  * @package PorPOISe
  */
-class XMLPOIConnector extends POIConnector {
+class XMLPOICollector implements POICollector {
 	const EMPTY_DOCUMENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<pois/>";
 	/** @var string */
 	protected $source;
@@ -64,35 +64,20 @@ class XMLPOIConnector extends POIConnector {
 	}
 
 	/**
-	 * Provides an XPath query for finding POIs in the source file.
-	 *
-	 * For relative queries, the context node is the root element.
-	 * This method can be overridden to use a different query.
-	 *
-	 * @param Filter $filter
-	 * 
-	 * @return string
-	 */
-	public function buildQuery(Filter $filter = NULL) {
-		return "poi";
-	}
-
-	/**
 	 * Get POIs
 	 *
-	 * @param Filter $filter
+	 * @param float $lat
+	 * @param float $lon
+	 * @param int $radius
+	 * @param int $accuracy
+	 * @param array $options
 	 *
 	 * @return POI[]
 	 *
 	 * @throws Exception
 	 */
-	public function getPOIs(Filter $filter = NULL) {
+	public function getPOIs($lat, $lon, $radius, $accuracy, $options) {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
-
-		$lat = $filter->lat;
-		$lon = $filter->lon;
-		$radius = $filter->radius;
-		$accuracy = $filter->accuracy;
 
 		if(!empty($this->styleSheetPath)) {
 			$simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
@@ -105,8 +90,7 @@ class XMLPOIConnector extends POIConnector {
 
 		$result = array();
 
-		$xpathQuery = $this->buildQuery($filter);
-		foreach ($simpleXML->xpath($xpathQuery) as $poiData) {
+		foreach ($simpleXML->poi as $poiData) {
 			if (empty($poiData->dimension) || (int)$poiData->dimension == 1) {
 				$poi = new POI1D();
 			} else if ((int)$poiData->dimension == 2) {
@@ -144,13 +128,10 @@ class XMLPOIConnector extends POIConnector {
 				}
 			}
 
-			if (empty($filter)) {
+			$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+			/* new in Layar 3: flexible radius */
+			if (empty($radius) || $poi->distance < $radius + $accuracy) {
 				$result[] = $poi;
-			} else {
-				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
-					$result[] = $poi;
-				}
 			}
 		}
 
@@ -163,7 +144,7 @@ class XMLPOIConnector extends POIConnector {
 	 * Store POIs
 	 *
 	 * Builds up an XML and writes it to the source file with which this
-	 * XMLPOIConnector was created. Note that there is no way to do
+	 * XMLPOICollector was created. Note that there is no way to do
 	 * "reverse XSL" so any stylesheet is ignored and native PorPOISe XML
 	 * is written to the source file. If this file is not writable, this
 	 * method will return FALSE.
@@ -353,26 +334,5 @@ class XMLPOIConnector extends POIConnector {
 			throw new Exception("transformXML - Failed to load xml");
 		}
 		return $xslProcessor->transformToXml($xml);
-	}
-
-	/**
-	 * Set an option
-	 *
-	 * XMLPOIConnector supports one option, "stylesheet"
-	 *
-	 * @param string $optionName
-	 * @param string $optionValue
-	 *
-	 * @return void
-	 */
-	public function setOption($optionName, $optionValue) {
-		switch ($optionName) {
-		case "stylesheet":
-			$this->setStyleSheet($optionValue);
-			break;
-		default:
-			parent::setOption($optionName, $optionValue);
-			break;
-		}
 	}
 }
