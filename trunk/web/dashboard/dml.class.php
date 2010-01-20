@@ -67,6 +67,9 @@ class DML {
 		default:
 			throw new Exception(sprintf("Invalid source type: %d", $layerDefinition->getSourceType()));
 		}
+		foreach ($layerDefinition->connectorOptions as $optionName => $option) {
+			$poiConnector->setOption($optionName, $option);
+		}
 		return $poiConnector;
 	}
 
