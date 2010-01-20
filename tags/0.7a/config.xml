@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+
+<porpoise-configuration>
+ <developer-id>12345</developer-id>
+ <developer-key>your key here</developer-key>
+ <connectors>
+  <connector><name>XMLPOIConnector</name><file>xmlpoiconnector.class.php</file></connector>
+  <connector><name>SQLPOIConnector</name><file>sqlpoiconnector.class.php</file></connector>
+  <connector><name>FlatPOIConnector</name><file>flatpoiconnector.class.php</file></connector>
+ </connectors>
+ <layers>
+<!--
+Sample tab-delimited layer configuration
+  <layer>
+   <name>example</name>
+   <connector>FlatPOIConnector</connector>
+   <source>example.tab</source>
+  </layer>
+-->
+<!--
+Sample XML layer configuration
+  <layer>
+   <name>example</name>
+   <connector>XMLPOIConnector</connector>
+   <source>example.xml</source>
+  </layer>
+-->
+<!--
+Sample XML+XSL layer configuration
+  <layer>
+   <name>example</name>
+   <connector>XMLPOIConnector
+    <options><stylesheet>xsl/yoursheet.xsl</stylesheet></options>
+	 </connector>
+   <source>example.xml</source>
+  </layer>
+-->
+<!--
+Sample database layer configuration
+  <layer>
+   <name>example</name>
+   <connector>SQLPOIConnector</connector>
+   <source>
+    <dsn>mysql:host=localhost;dbname=example</dsn>
+    <username/>
+    <password/>
+   </source>
+  </layer>
+-->
+
+
+<!-- 
+	Test layer for OAuth login / logout and User account persistence
+
+	Uses OAuth test service:
+	* http://oauth-sandbox.sevengoslings.net/
+	* http://github.com/fangel/oauth-sandbox
+	
+	Make sure tp create a database 'porpoise' with schema from database.sql
+	DSN sessings are valid for default MAMP configuration
+	
+	See web-app.class.php and layers/TestApp.php for implementation details
+	You should add specific web app actions to the subclass (TestApp) only.
+	
+	Test this app by accessing the urls (example for MAMP default configuration):
+	
+	* http://localhost:8888/PorPOISe/web/web.php?layerName=test&action=login
+	* http://localhost:8888/PorPOISe/web/web.php?layerName=test&action=test
+	* http://localhost:8888/PorPOISe/web/web.php?layerName=test&action=two_legged
+	* http://localhost:8888/PorPOISe/web/web.php?layerName=test&action=three_legged
+	* http://localhost:8888/PorPOISe/web/web.php?layerName=test&action=logout
+	
+	Configuration at the Layar deployment site:
+	Add the 'login' action with the full login url, e.g.
+	* http://example.com/web/web.php?layerName=test&action=login
+-->
+<!--
+  <layer>
+   <name>test</name>
+   <connector>SQLPOIConnector</connector>
+   <source>
+    <dsn>mysql:host=localhost;dbname=porpoise;port=8889</dsn>
+    <username>root</username>
+    <password>root</password>
+   </source>
+   <oauth>
+   	<consumer_key>d5c7c0cdc692564f</consumer_key>
+   	<secret_key>952ae5635185f6bf0257bd81bf02</secret_key>
+	<baseUrl>http://oauth-sandbox.sevengoslings.net</baseUrl>
+	<tokenPath>
+		<request>/request_token</request>
+		<access>/access_token</access>
+		<authorize>/authorize</authorize>
+	</tokenPath>
+   </oauth>
+  </layer>
+-->
+
+ </layers>
+</porpoise-configuration>
