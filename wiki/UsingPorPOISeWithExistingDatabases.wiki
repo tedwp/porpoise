@@ -16,13 +16,13 @@ If you already have a database with coordinates and descriptive information, all
 
 But, for PorPOISe to deliver it to a Layar client, it _should_ look like this:
 
-|| *id* || *lat* || *lon* || *line 2* || *line3* || title ||
+|| *id* || *lat* || *lon* || *line2* || *line3* || *title* ||
 || 1 || 52.1 || 4.5 || Zuidbuurtseweg 2 || Zoeterwoude || some euros ||
 || 2 || 52.11 || 4.3 || Brugsestraat 39 || Den Haag || many euros ||
 
 You can achieve this transformation fairly easily by _aliasing_ the column names in your SQL query:
 
-`SELECT house_id AS id, latitude AS lat, longitude AS lon, CONCAT(street, ' ', number) as line2, city as line3, price as title FROM House`
+`SELECT house_id AS id, latitude AS lat, longitude AS lon, CONCAT(street, ' ', number) AS line2, city AS line3, price AS title FROM House`
 
 When you exexcute this query on the first table the output will look like it came from the second table, so (almost) ready for PorPOISe to send back to the client. However, how do you instruct PorPOISe to use this query?
 
