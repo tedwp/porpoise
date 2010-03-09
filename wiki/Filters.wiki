@@ -65,6 +65,8 @@ What we're doing here is _overriding_ a method (class function) of `XMLPOIConnec
 
 Save the file and refresh your layer to check all the changes are correct. If you see your POIs again, everything is fine. Otherwise, check that your accolades match up (for every `{` there should be a matching `}` later in the file). Now try entering a search value (tap the radar in the Layar client to quickly access filters) and see your new filter in effect!
 
+You may have noticed in the example above that the property that we check against is called `searchbox1` while in the Layar API it is called `SEARCHBOX_1`. This has been done to prevent confusion between variables, which are usually written with lowercast letters, and constants, which are usually in capitals. The same has been done for `SEARCHBOX_2` and `SEARCHBOX_3` as well as `RADIOLIST` (`radiolist` in PorPOISe), `CUSTOM_SLIDER_n` (`customSlidern`) and `CHECKBOXLIST` (`checkboxlist`). Furthermore, multiple search boxes and sliders have only been introduced in Layar 3, in Layar 2 there was only one of either and they did not have an `_n` suffix. PorPOISe handles this discrepancy for you and _always_ stores the value of the only (if only one) or first (when there are multiple) searchbox/slider in `searchbox1`/`customSlider1`, so as a coder your don't have to worry about it.
+
 This concludes this example. You can now edit this `POIConnector` to do the filtering _you_ want or create a new one with a completely different filter: the choice is yours.
 
 Below is the complete example `MyPOIConnector`, with extra comments inline explaining what's what.
