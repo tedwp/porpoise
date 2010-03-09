@@ -52,8 +52,8 @@ class LayarPOIServer {
 	// layers in this server
 	protected $layers = array();
 
-	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon", "accuracy");
-	protected $optionalFields = array("RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
+	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon");
+	protected $optionalFields = array("accuracy", "RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
 
 	/**
 	 * Add a layer to the server
@@ -222,7 +222,8 @@ class LayarPOIServer {
 				$result->userID = $value;
 				break;
 			case "pageKey":
-				$result->pageKey = $value;
+			case "lang":
+				$result->$key = $value;
 				break;
 			case "timestamp":
 			case "accuracy":
