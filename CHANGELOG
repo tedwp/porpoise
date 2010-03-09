@@ -1,3 +1,13 @@
+= Release 0.71 =
+- added support for the "lang" parameter in the Filter class
+- changed the precision of lat/lon in the default database from FLOAT to
+  DOUBLE PRECISION to prevent severe rounding errors
+- fixed a bug where the eccuracy parameter was deemed mandatory while it is
+  optional
+
+= Release 0.7a =
+- Fixed a bug in the dashboard
+
 = Release 0.7 =
 - Support for filter hooks (see Wiki for instructions)
 - Support for authenticated layers
