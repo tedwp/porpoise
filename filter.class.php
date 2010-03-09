@@ -40,8 +40,10 @@ class LayarFilter extends Filter {
 	public $lat = NULL;
 	/** @var float Longitude of the client */
 	public $lon = NULL;
-	/** @var int (In)accuracy of the current geolocation reading */
-	public $accuracy;
+	/** @var lang Two-letter language code */
+	public $lang = NULL;
+	/** @var int (In)accuracy of the current geolocation reading. Default 0 for when it's not provided */
+	public $accuracy = 0;
 	/** @var string Radio option selected */
 	public $radiolist = NULL;
 	/** @var string Searchbox value (Layar v2)/First searchbox value (Layar v3) */

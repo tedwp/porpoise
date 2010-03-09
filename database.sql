@@ -23,13 +23,11 @@ DROP TABLE IF EXISTS `Action`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `Action` (
-  `id` int(11) NOT NULL,
   `uri` varchar(1024) default NULL,
   `label` varchar(255) default NULL,
   `poiId` int(11) default NULL,
   `autoTriggerRange` int(11) default NULL,
   `autoTriggerOnly` tinyint(1) default NULL,
-  PRIMARY KEY  (`id`),
   KEY `poiId` (`poiId`),
   CONSTRAINT `Action_ibfk_1` FOREIGN KEY (`poiId`) REFERENCES `POI` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -63,8 +61,8 @@ CREATE TABLE `POI` (
   `id` int(11) NOT NULL auto_increment,
   `attribution` varchar(255) default NULL,
   `imageURL` varchar(1024) default NULL,
-  `lat` float default NULL,
-  `lon` float default NULL,
+  `lat` double precision default NULL,
+  `lon` double precision default NULL,
   `line2` varchar(255) default NULL,
   `line3` varchar(255) default NULL,
   `line4` varchar(255) default NULL,
