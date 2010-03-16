@@ -61,8 +61,20 @@ abstract class WebApiPOIConnector extends WebApp implements iPOIConnector {
 	 */
 	public function initDefinition($definition) {
 		parent::__construct($definition);
+	}
+
+	/**
+	 * INitialize user- and OAuth objects
+	 * to be called just in time for any API request
+	 * 
+	 * @see getPOIs()
+	 */
+	public function init() {
 		// try initialization of oAuth user token
 		try {
+			$this->http = $this->httpInit($this->definition->oauth);		
+			$this->session_start();
+			$this->userInit($this->definition);
 			$this->initToken();
 		} catch (Exception $e) {
 			// fail silently

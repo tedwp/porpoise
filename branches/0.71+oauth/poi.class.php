@@ -74,10 +74,13 @@ class POIAction extends Arrayable {
 	public $uri = NULL;
 	/** @var string Label to show in the interface */
 	public $label = NULL;
+	
+	// do not pre-declare these properties b/c they are optional in the output
+	// saves a few bytes in data transport
 	/** @var int Range for action autotrigger */
-	public $autoTriggerRange = NULL;
+//	public $autoTriggerRange = NULL;
 	/** @var bool Only act on autotrigger */
-	public $autoTriggerOnly = FALSE;
+//	public $autoTriggerOnly = FALSE;
 
 	/**
 	 * Constructor

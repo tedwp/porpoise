@@ -98,6 +98,12 @@ class PorPOISeConfig {
 				$def->source = (string)$node->source;
 			}
 			
+			/* web app configuration */
+			if (isset($node->web_app)) {
+				$def->web_app["name"] = (string)$node->web_app->name;
+				$def->web_app["file"] = (string)$node->web_app->file;
+			}
+			
 			/* load OAuth settings */
 			if (isset($node->oauth)) {
 				$oauth = $def->oauth;

@@ -37,6 +37,9 @@ class EpiCurl
     $this->requests[$key] = $ch;
     curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'headerCallback'));
 
+// DEBUGGING	
+//curl_setopt($ch, CURLOPT_PROXY, "127.0.0.1");
+//curl_setopt($ch, CURLOPT_PROXYPORT, 8080);
     $code = curl_multi_add_handle($this->mc, $ch);
     
     // (1)

@@ -24,7 +24,7 @@ require_once("user.class.php");
 
 
 /**
- * Basic web app, handlers OAuth login, logout and persistence.
+ * Basic web app, handler OAuth login, logout and persistence.
  * Extend for application specific purposes.
  *
  * @package PorPOISe
@@ -35,6 +35,7 @@ class WebApp {
 	protected $http; // OAuth aware http object
 	protected $user; // User persistence object
 	protected $script_name = null; // Use this to override script name for method getActionUrl()
+	protected $definition; // LayerDefinition
 
 	private $sessionStarted = false;
 
@@ -45,17 +46,17 @@ class WebApp {
 	 */
 	public function __construct(LayerDefinition $definition) {
 		$this->layerName = $definition->name;
-		$this->http = $this->httpInit($definition->oauth);
-		$this->session_start();
-		$this->userInit($definition);
+		$this->definition = $definition;
 	}
 
 	/**
 	 * Start a named session object
 	 * @return void
 	 */
-	private function session_start() {
+	protected function session_start() {
 		if ($this->sessionStarted) return;
+		if (isset($_REQUEST['userId'])) 
+			session_id($_REQUEST['userId']); // kludge
 		session_name('PorPOISe');
 		if (!@session_start()) {
 			throw new Exception('Could not initialize new session', 500);
@@ -68,7 +69,7 @@ class WebApp {
 	* @return EpiOAuth $http
 	* @param OAuthSetup $oauthSetup
 	*/
-	private function httpInit(OAuthSetup $oauthSetup) {
+	protected function httpInit(OAuthSetup $oauthSetup) {
 		$http = new HttpRequest();
 		$http->init($oauthSetup);
 		return $http;
@@ -80,7 +81,7 @@ class WebApp {
 	 * @return void
 	 * @param LayerDefinition $definition
 	 */
-	private function userInit(LayerDefinition $definition) {
+	protected function userInit(LayerDefinition $definition) {
 
 		// get data source.
 		// NOTE: only Database persistence implemented for now
@@ -96,8 +97,12 @@ class WebApp {
 			$this->user->fromJson($_SESSION[$this->layerName . 'User']);
 			return;
 		} elseif (isset($_COOKIE[$this->layerName . 'Id'])) {
-			// restore user data from persistent storage or cookie
+			// restore user data from persistent storage keyed by cookie
 			$this->user->getById($_COOKIE[$this->layerName . 'Id']);
+			$_SESSION[$this->layerName . 'User'] = $this->user->toJson();
+		} elseif (isset($_REQUEST['userId'])) {
+			// restore user data from persistent storage keyed by Layar UID
+			$this->user->getById($_REQUEST['userId']);
 			$_SESSION[$this->layerName . 'User'] = $this->user->toJson();
 		}
 	}
@@ -109,6 +114,10 @@ class WebApp {
 	 * @return void
 	 */
 	public function handleRequest() {
+		$this->http = $this->httpInit($this->definition->oauth);		
+		$this->session_start();
+		$this->userInit($this->definition);
+		
 		$action = (string)$_REQUEST['action'];
 		// catch Exceptions
 		try {
@@ -129,7 +138,17 @@ class WebApp {
 				default:
 					// these actions are made against a authenticated http class
 					// so initialize token for three-legged authentication
-					$this->initToken();
+					// only if user is logged-in
+					if ($this->user->getApp_user_name()) {
+						try {
+							$this->initToken();
+						} catch (Exception $e) {
+							// FIXME take appropriate action, e.g. logout and login depending on error
+						}
+					}
+					// check if user is logged in using $this->user->getApp_user_name()
+					// in method call.
+					
 					// poor man's reflection; call public method if it exists in called (sub)class
 					// private and protected methods are not exposed
 					if (method_exists($this, $action)) {
@@ -217,7 +236,7 @@ class WebApp {
 		// in case no callback is sent, use value 'oob' - out of band
 		// oauth_callback=oob
 		$params = array('oauth_callback' => $callback);
-		// get OAth tokens
+		// get OAuth tokens
 		$token = $this->http->getRequestToken($params);
 		// persist tokens
 		$this->initToken($token);
@@ -312,8 +331,9 @@ class WebApp {
 	 * @param object $token[optional]
 	 */
 	protected function initToken($token = null) {
+		$this->http = $this->httpInit($this->definition->oauth);
 		$this->session_start();
-
+		$this->userInit($this->definition);
 		if (empty($token)) {
 			// restore from User object
 			if ($this->user && $this->user->getOauth_token()) {
@@ -388,10 +408,10 @@ class WebAppServerFactory {
 	protected function createServerFromLayerDefinitions(array $definitions) {
 		$result = new WebAppServer();
 		foreach ($definitions as $definition) {
-			// see if a extended WebApp class exists for current definition
-			$appClass = ucfirst($definition->name) . 'WebApp';
-			$appFile = sprintf('layers/%s.php', $appClass);
-			if (file_exists($appFile)) {
+			// see if an extended WebApp class exists for current definition
+			if (isset($definition->web_app)) {
+				$appClass = $definition->web_app["name"];
+				$appFile = (string)$definition->web_app["file"];
 				include_once($appFile);
 				$webApp = new $appClass($definition);
 			} else {
