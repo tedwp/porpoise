@@ -40,6 +40,8 @@ class LayarFilter extends Filter {
 	public $lat = NULL;
 	/** @var float Longitude of the client */
 	public $lon = NULL;
+	/** @var country Two-letter country code */
+	public $countryCode = NULL;
 	/** @var lang Two-letter language code */
 	public $lang = NULL;
 	/** @var int (In)accuracy of the current geolocation reading. Default 0 for when it's not provided */
