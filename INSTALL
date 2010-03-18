@@ -11,17 +11,23 @@ a UNIX-like system you can make a symbolic link ('ln -s') to the "web/"
 directory from a place in your home directory that is accessible through the
 web server.
 
+Now move the directory layers from the PorPOISe directory one level up,
+so it is on the same level as the PorPOISe directory, like this:
+
+/path/to/layers
+/path/to/PorPOISe
+
 Open "http://yourhost/yourdirectory/porpoise.php" and check that you get
 JSON output telling you that the parameter "userId" is missing. If you see
 this, PorPOISe works.
 
-Open "config.xml" in a text editor and fill in your developer ID and
+Open "layers/config.xml" in a text editor and fill in your developer ID and
 developer key in the appropriate places. If you have worked with PorPOISe
 before, you can configure your layers here as well. Otherwise, create layer
 data first (see README) and configure it here later.
 
 If you plan to use the dashboard, generate a password for user "default"
-(or the username of your choice) and store it in "web/dashboard/users.inc.php".
+(or the username of your choice) and store it in "PorPOISe/web/dashboard/users.inc.php".
 
 If you plan to use the dashboard in conjunction with XML files, you have
 to make your XML files writable for the web server. You can make the files

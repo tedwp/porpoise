@@ -1,8 +1,19 @@
+= Branch 0.71+oAuth
+- moved layers directory one level up, so deployment files for layers are
+  no longer part of the main PorPOISe distribution tree, see INSTALL
+- fix in webApp oAuth handler, now supports lazy loading of user credentials
+  and deferred oAuth initialization
+- added caching to layer server so subsequent page requests are served from
+  cache rather than calculated all over again
+- added webApiPoiconnector for making authenitcated API calls to 3rd party
+  services for POI requests
+- added web-app subclass settings to PorPOISe config
+
 = Release 0.71 =
 - added support for the "lang" parameter in the Filter class
 - changed the precision of lat/lon in the default database from FLOAT to
   DOUBLE PRECISION to prevent severe rounding errors
-- fixed a bug where the eccuracy parameter was deemed mandatory while it is
+- fixed a bug where the accuracy parameter was deemed mandatory while it is
   optional
 
 = Release 0.7a =

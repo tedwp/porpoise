@@ -316,6 +316,11 @@ class DbUser extends User {
 		$this->clear();		
 	}
 
+	/**
+	 * Look up user data by id or layar_uid.
+	 * It is assumed that both native ID and layar_uid are unique
+	 *
+	 */
 	public function getById($id) {
 		$fields = array('id', 'layar_uid', 'app_uid', 'app_user_name', 'oauth_token', 'oauth_token_secret', 'updated');
 		try {
@@ -330,7 +335,7 @@ class DbUser extends User {
 					$userArray[$field] = $val;
 				}
 			}
-			$sql = 'SELECT '. implode(",", $fields) .' FROM User WHERE id=:id';
+			$sql = 'SELECT '. implode(",", $fields) .' FROM User WHERE id=:id OR layar_uid=:id';
 			$stmt = $pdo->prepare($sql);
 			$stmt->execute(array('id' => $id));
 
@@ -346,4 +351,34 @@ class DbUser extends User {
 		}
 	}
 
+	public function getByLayarId($layar_uid) {
+		$fields = array('id', 'layar_uid', 'app_uid', 'app_user_name', 'oauth_token', 'oauth_token_secret', 'updated');
+		try {
+			$pdo = $this->getPDO();
+
+			$clauses = array();
+			$userArray = array();
+			foreach ($fields as $field) {
+				$val = call_user_func(array($this, 'get' . ucfirst($field)));
+				if ($val) {
+					$clauses []= "$field = :$field";
+					$userArray[$field] = $val;
+				}
+			}
+			$sql = 'SELECT '. implode(",", $fields) .' FROM User WHERE layar_uid=:id';
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute(array('id' => $layar_uid));
+
+			$row = $stmt->fetch(PDO::FETCH_ASSOC);
+			if ($stmt->rowCount()) {
+				foreach ($row as $k => $v) {
+					call_user_func(array($this, 'set' . ucfirst($k)), $v);
+				}
+			}
+			
+		} catch (PDOException $e) {
+			throw new Exception("Database error: " . $e->getMessage());
+		}
+	}
+	
 }

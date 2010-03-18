@@ -11,6 +11,7 @@
  *
  * @package PorPOISe
  */
+require_once("poiconnector.interface.php");
 
 /**
  * POI connector base class
@@ -22,51 +23,7 @@
  *
  * @package PorPOISe
  */
-abstract class POIConnector {
-	/**
-	 * Constructor
-	 *
-	 * Providing a source is a minimal requirement
-	 *
-	 * @param string $source
-	 */
-	public abstract function __construct($source);
-
-	/**
-	 * Return POIs
-	 *
-	 * This method should only return POIs that pass the criteria
-	 * stored in $filter. No filter means all POIs.
-	 *
-	 * @param Filter $filter
-	 *
-	 * @return POI[]
-	 *
-	 * @throws Exception
-	 */
-	public abstract function getPOIs(Filter $filter = NULL);
-
-	/**
-	 * Store POIs
-	 *
-	 * Store a set of POIs
-	 *
-	 * @param POI[] $pois POIs to store
-	 * @param string $mode "replace" to replace the current set, "update" to update current set (default)
-	 * @return void
-	 */
-	public abstract function storePOIs(array $pois, $mode = "update");
-
-	/**
-	 * Delete a POI
-	 *
-	 * @param string $poiID ID of the POI to delete
-	 *
-	 * @return void
-	 *
-	 * @throws Exception If the source is invalid or the POI could not be deleted
-	 */
-	public abstract function deletePOI($poiID);
+abstract class POIConnector implements iPOIConnector {
 
 	/**
 	 * Set a (connector-specific) option

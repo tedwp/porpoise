@@ -443,6 +443,10 @@ class LayarPOIServerFactory {
 			foreach ($definition->connectorOptions as $optionName => $option) {
 				$poiConnector->setOption($optionName, $option);
 			}
+			// for WebApi: pass full defnition object
+			if (method_exists($poiConnector, 'initDefinition')) {
+				$poiConnector->initDefinition($definition);
+			}
 			$layer->setPOIConnector($poiConnector);
 			$result->addLayer($layer);
 		}

@@ -41,6 +41,8 @@ class Layer {
 	protected $nearbyPOIs;
 	protected $hasMorePOIs;
 	protected $nextPageKey;
+	
+	protected $radius = 0;
 
 	/**
 	 * Constructor
@@ -60,7 +62,7 @@ class Layer {
 	 *
 	 * @param POIConnector $poiConnector
 	 */
-	public function setPOIConnector(POIConnector $poiConnector) {
+	public function setPOIConnector(iPOIConnector $poiConnector) {
 		$this->poiConnector = $poiConnector;
 	}
 
@@ -82,17 +84,32 @@ class Layer {
 	 */
 	public function determineNearbyPOIs(Filter $filter) {
 		$this->nearbyPOIs = array();
-		if (!empty($this->poiConnector)) {
-			$this->nearbyPOIs = $this->poiConnector->getPOIs($filter);
-		}
-		$this->hasMorePOIs = FALSE;
-		$this->nextPageKey = NULL;
 
 		if (isset($filter->pageKey)) {
 			$offset = $filter->pageKey * self::POIS_PER_PAGE;
 		} else {
 			$offset = 0;
 		}
+
+		if (($offset == 0 || // always reload for 1st page request
+				!$this->session_restore($filter->userID)) && // or when no session data exists
+					!empty($this->poiConnector)) {
+						$this->nearbyPOIs = $this->poiConnector->getPOIs($filter);
+						$this->session_save($filter->userID);
+		}
+		// iterate over POIs and determine max distance
+		// TODO: do something sensible with this
+		// current implementation adds all POIs in the order they are
+		// retrieved, while accorcing to the spec max 50 POIs are displayed.
+		// So limit POIs to max. 50, optionally after sorting by distance.
+		// Maybe make the sorting order a config setting
+//		if ($poi->distance > $this->radius) {
+//			$this->radius = $poi->distance;
+//		}
+				
+		$this->hasMorePOIs = FALSE;
+		$this->nextPageKey = NULL;
+
 		if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
 			$this->hasMorePOIs = TRUE;
 			$this->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
@@ -104,8 +121,46 @@ class Layer {
 			$limit = min(self::POIS_PER_PAGE, count($this->nearbyPOIs) - $offset);
 			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, $limit);
 		}
+		if (!$this->hasMorePOIs) {
+			$this->session_delete($filter->userID);
+		}
 	}
 
+	// NOTE: session ID needs to be set correctly, see also WebApp class
+	protected function session_init($sid) {
+		if ($sid != session_id($sid)) {
+			@session_destroy(); // ugly suppression of warnings if no session exists
+			session_id($sid);
+			session_name('PorPOISe');
+			session_start();
+		}
+	}
+
+	protected function session_restore($sid) {
+		$this->session_init($sid);
+		if (isset($_SESSION['nearbyPOIs'])) {
+			$this->nearbyPOIs = $_SESSION['nearbyPOIs'];
+			// print "SessionRestored".session_id();
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	protected function session_save($sid) {
+		$this->session_init($sid);
+		$_SESSION['nearbyPOIs'] = $this->nearbyPOIs;
+		session_commit();
+	}
+	
+	protected function session_delete($sid) {
+		$this->session_init($sid);
+		unset($_SESSION['nearbyPOIs']);
+		session_commit();
+	}
+	
+	
 	/**
 	 * Get the nearby POIs determined after calling determineNearbyPOIs()
 	 *
