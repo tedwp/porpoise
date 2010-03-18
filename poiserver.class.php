@@ -73,10 +73,14 @@ class LayarPOIServer {
 	 *
 	 * @return void
 	 */
-	public function handleRequest() {
+	public function handleRequest(LayarLogger $loghandler = null) {
 		try {
 			$this->validateRequest();
 			$filter = $this->buildFilter();
+			
+			if ($loghandler) {
+				$loghandler->log($_REQUEST["layerName"], $filter);
+			}
 	
 			$layer = $this->layers[$_REQUEST["layerName"]];
 			$layer->determineNearbyPOIs($filter);
@@ -223,6 +227,7 @@ class LayarPOIServer {
 				break;
 			case "pageKey":
 			case "lang":
+			case "countryCode":
 				$result->$key = $value;
 				break;
 			case "timestamp":
