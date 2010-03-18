@@ -17,8 +17,14 @@
 require_once("httprequest.class.php");
 /** configuration */
 require_once("porpoiseconfig.class.php");
+
 /** html template */
-require_once("template.php");
+if (file_exists('../layers/template.php')) {
+	require_once("../layers/template.php");
+} else {
+	require_once("template.php");
+}
+
 /** User persistence classes */
 require_once("user.class.php");
 
@@ -190,7 +196,7 @@ class WebApp {
 	 * @todo override template class per layer name
 	 */
 	protected function render(array $view) {
-		$user = $this->user->getApp_user_name();
+		$user = (isset($this->user)) ? $this->user->getApp_user_name() : '';
 		if ($user) {
 			$view['user'] = $user;
 			$view['logout'] = $this->getActionUrl('logout');
@@ -378,11 +384,15 @@ class WebAppServer {
 	}
 
 	public function handleRequest() {
-		if (isset($this->webApps[$_REQUEST['layerName']])) {
+		if (isset($_REQUEST['layerName']) && isset($this->webApps[$_REQUEST['layerName']])) {
 			$app = $this->webApps[$_REQUEST['layerName']];
 			$app->handleRequest();
 		} else {
-			throw new Exception('No such layer', 401);
+			$view = array(
+				'title' => 'General Error',
+				'content' => '<p>There has been a general error.</p><p>This Layer is unable to process your request.</p>'
+			);
+			Template::render($view);
 		}
 	}
 
