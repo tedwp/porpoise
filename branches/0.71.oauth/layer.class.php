@@ -138,9 +138,13 @@ class Layer {
 
 	protected function session_restore($sid) {
 		$this->session_init($sid);
+		// sanity check: are we requesting POIs from the same layer?
+		if ($_SESSION['layerName'] != $this->layerName) {
+			$this->session_delete($sid);
+			return false;
+		}
 		if (isset($_SESSION['nearbyPOIs'])) {
 			$this->nearbyPOIs = $_SESSION['nearbyPOIs'];
-			// print "SessionRestored".session_id();
 			return true;
 		} else {
 			return false;
@@ -151,12 +155,14 @@ class Layer {
 	protected function session_save($sid) {
 		$this->session_init($sid);
 		$_SESSION['nearbyPOIs'] = $this->nearbyPOIs;
+		$_SESSION['layerName'] = $this->layerName;
 		session_commit();
 	}
 	
 	protected function session_delete($sid) {
 		$this->session_init($sid);
 		unset($_SESSION['nearbyPOIs']);
+		unset($_SESSION['layerName']);
 		session_commit();
 	}
 	
