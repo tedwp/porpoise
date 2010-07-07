@@ -16,7 +16,7 @@
  * Filter class
  *
  * Used to contain filter values as passed by a client app
- *
+ * 
  * @package PorPOISe
  */
 abstract class Filter {
@@ -24,6 +24,8 @@ abstract class Filter {
 
 /**
  * Filter class for Layar filter values
+ *
+ * Note: filter is initialized in LayarPOIserver class
  *
  * @package PorPOISe
  */
@@ -40,6 +42,8 @@ class LayarFilter extends Filter {
 	public $lat = NULL;
 	/** @var float Longitude of the client */
 	public $lon = NULL;
+	/** @var country Two-letter country code */
+	public $countryCode = NULL;
 	/** @var lang Two-letter language code */
 	public $lang = NULL;
 	/** @var int (In)accuracy of the current geolocation reading. Default 0 for when it's not provided */
@@ -64,4 +68,12 @@ class LayarFilter extends Filter {
 	public $checkboxlist = array();
 	/** @var int Altitude of the client */
 	public $alt = NULL;
+	/** var string layerName the requested Layer name - this is a PorPOISe specific addition */
+	public $layerName = NULL;
+	/** @var string requestedPoiId - which POI the user clicked in Layar Stream, default "None" */
+	public $requestedPoiId = NULL;
+	/** @var string version */
+	public $version = NULL;
+	/** @var string userAgent - the Uer-Agent header */
+	public $userAgent = NULL;	
 }

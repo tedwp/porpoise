@@ -41,6 +41,8 @@ class Layer {
 	protected $nearbyPOIs;
 	protected $hasMorePOIs;
 	protected $nextPageKey;
+	
+	protected $radius = null;
 
 	/**
 	 * Constructor
@@ -78,34 +80,103 @@ class Layer {
 	 *
 	 * Filter $filter
 	 *
-	 * @return void
+	 * @return int number of POIs
 	 */
 	public function determineNearbyPOIs(Filter $filter) {
 		$this->nearbyPOIs = array();
-		if (!empty($this->poiConnector)) {
-			$this->nearbyPOIs = $this->poiConnector->getPOIs($filter);
-		}
-		$this->hasMorePOIs = FALSE;
-		$this->nextPageKey = NULL;
 
 		if (isset($filter->pageKey)) {
 			$offset = $filter->pageKey * self::POIS_PER_PAGE;
 		} else {
 			$offset = 0;
 		}
-		if (count($this->nearbyPOIs) - $offset > self::POIS_PER_PAGE) {
+
+		if (($offset == 0 || // always reload for 1st page request
+			!$this->session_restore($filter->userID)) && // or when no session data exists
+				!empty($this->poiConnector)) {
+
+					$pois = $this->poiConnector->getPOIs($filter);
+					
+					foreach($pois as $poi) {
+						if ($poi->distance > $this->radius) {
+							$this->radius = $poi->distance;
+						}
+					}
+					$this->nearbyPOIs = $pois;
+					$this->session_save($filter->userID);
+		}
+		// iterate over POIs and determine max distance
+		// TODO: do something sensible with this
+		// current implementation adds all POIs in the order they are
+		// retrieved, while according to the spec max 50 POIs are displayed.
+		// So limit POIs to max. 50, optionally after sorting by distance.
+		// Maybe make the sorting order a config setting
+				
+		$this->hasMorePOIs = FALSE;
+		$this->nextPageKey = NULL;
+		$numPois = count($this->nearbyPOIs);
+		
+		if ($numPois - $offset > self::POIS_PER_PAGE) {
 			$this->hasMorePOIs = TRUE;
 			$this->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
 		}
-		if ($offset > count($this->nearbyPOIs)) {
+		if ($offset > $numPois) {
 			// no POIs on this page
 			$nearbyPOIs = array();
 		} else {
-			$limit = min(self::POIS_PER_PAGE, count($this->nearbyPOIs) - $offset);
+			$limit = min(self::POIS_PER_PAGE, $numPois - $offset);
 			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, $limit);
+		}
+		if (!$this->hasMorePOIs) {
+			$this->session_delete($filter->userID);
+		}
+		return $numPois;
+	}
+
+	// NOTE: session ID needs to be set correctly, see also WebApp class
+	protected function session_init($sid) {
+		if ($sid != session_id($sid)) {
+			@session_destroy(); // ugly suppression of warnings if no session exists
+			session_id($sid);
+			session_name('PorPOISe');
+			session_start();
 		}
 	}
 
+	protected function session_restore($sid) {
+		$this->session_init($sid);
+		// sanity check: are we requesting POIs from the same layer?
+		if (@$_SESSION['layerName'] != $this->layerName) {
+			$this->session_delete($sid);
+			return false;
+		}
+		if (isset($_SESSION['nearbyPOIs'])) {
+			$this->nearbyPOIs = $_SESSION['nearbyPOIs'];
+			$this->radius = (isset($_SESSION['radius'])) ? $_SESSION['radius'] : null;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	protected function session_save($sid) {
+		$this->session_init($sid);
+		$_SESSION['nearbyPOIs'] = $this->nearbyPOIs;
+		$_SESSION['layerName'] = $this->layerName;
+		$_SESSION['radius'] = $this->radius;
+		session_commit();
+	}
+	
+	protected function session_delete($sid) {
+		$this->session_init($sid);
+		unset($_SESSION['nearbyPOIs']);
+		unset($_SESSION['layerName']);
+		unset($_SESSION['radius']);
+		session_commit();
+	}
+	
+	
 	/**
 	 * Get the nearby POIs determined after calling determineNearbyPOIs()
 	 *
@@ -115,6 +186,26 @@ class Layer {
 		return $this->nearbyPOIs;
 	}
 
+		
+	/**
+	 * Get the Layer name
+	 *
+	 * @return string $layerName
+	 */
+	public function getLayerName() {
+		return $this->layerName;
+	}
+		
+	/**
+	 * Get the max. radius plus some margin
+	 *
+	 * @return int $radius
+	 */
+	public function getRadius() {
+		return $this->radius;
+	}
+	
+	
 	/**
 	 * Check if there are more POIs than returned (for additional pages)
 	 *

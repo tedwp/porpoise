@@ -14,17 +14,15 @@ Sample tab-delimited layer configuration
   <layer>
    <name>example</name>
    <connector>FlatPOIConnector</connector>
-   <source>example.tab</source>
+   <source>layers/example.tab</source>
   </layer>
 -->
-<!--
 Sample XML layer configuration
   <layer>
    <name>example</name>
    <connector>XMLPOIConnector</connector>
-   <source>example.xml</source>
+   <source>layers/example.xml</source>
   </layer>
--->
 <!--
 Sample XML+XSL layer configuration
   <layer>
@@ -32,7 +30,7 @@ Sample XML+XSL layer configuration
    <connector>XMLPOIConnector
     <options><stylesheet>xsl/yoursheet.xsl</stylesheet></options>
 	 </connector>
-   <source>example.xml</source>
+   <source>layers/example.xml</source>
   </layer>
 -->
 <!--
@@ -83,6 +81,10 @@ Sample database layer configuration
     <username>root</username>
     <password>root</password>
    </source>
+   <web_app>
+   	<name>TestWebApp</name>
+   	<file>../layers/TestWebApp.php</file>
+   </web_app>
    <oauth>
    	<consumer_key>d5c7c0cdc692564f</consumer_key>
    	<secret_key>952ae5635185f6bf0257bd81bf02</secret_key>

@@ -54,6 +54,33 @@ class LayarPOIServer {
 
 	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon");
 	protected $optionalFields = array("accuracy", "RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
+	protected $optionalPOIFieldsDefaults = array(
+		"inFocus" => FALSE,
+		"alt" => NULL,
+		"relativeAlt" => NULL,
+		"doNotIndex" => FALSE,
+		"showSmallBiw" => TRUE,
+		"showBiwOnClick" => TRUE
+	);
+	protected $optionalResponseFieldsDefaults = array(
+		"refreshInterval" => NULL,
+		"refreshDistance" => NULL,
+		"fullRefresh" => TRUE,
+		"action" => NULL,
+		"responseMessage" => NULL
+	);
+	protected $optionalActionFieldsDefaults = array(
+		"autoTriggerRange" => NULL,
+		"autoTriggerOnly" => NULL,
+		"contentType" => NULL,
+		"method" => "GET",
+		"activityType" => NULL,
+		"params" => NULL,
+		"closeBiw" => FALSE,
+		"showActivity" => TRUE,
+		"activityMessage" => NULL
+	);
+
 
 	/**
 	 * Add a layer to the server
@@ -73,13 +100,17 @@ class LayarPOIServer {
 	 *
 	 * @return void
 	 */
-	public function handleRequest() {
+	public function handleRequest(LayarLogger $loghandler = null) {
+		$filter = $this->buildFilter();
 		try {
 			$this->validateRequest();
-			$filter = $this->buildFilter();
-	
+			
 			$layer = $this->layers[$_REQUEST["layerName"]];
-			$layer->determineNearbyPOIs($filter);
+			$numPois = $layer->determineNearbyPOIs($filter);
+			if ($loghandler) {
+				$loghandler->log($filter, array('numpois' => $numPois));
+			}
+	
 			$pois = $layer->getNearbyPOIs();
 			if (count($pois) == 0) {
 				$this->sendErrorResponse(self::ERROR_CODE_NO_POIS);
@@ -91,9 +122,14 @@ class LayarPOIServer {
 			} else {
 				$nextPageKey = NULL;
 			}
-		
-			$this->sendResponse($pois, $morePages, $nextPageKey);
+			$radius = $layer->getRadius();
+			
+			$this->sendResponse($pois, $morePages, $nextPageKey, $radius);
 		} catch (Exception $e) {
+			if ($loghandler) {
+				$loghandler->log($filter, array('errorMessage' => $e->getMessage()));
+			}
+	
 			$this->sendErrorResponse(self::ERROR_CODE_DEFAULT, $e->getMessage());
 		}
 	}
@@ -107,7 +143,7 @@ class LayarPOIServer {
 	 *
 	 * @return void
 	 */
-	protected function sendResponse(array $pois, $morePages = FALSE, $nextPageKey = NULL) {
+	protected function sendResponse(array $pois, $morePages = FALSE, $nextPageKey = NULL, $radius = NULL) {
 		$response = array();
 		$response["morePages"] = $morePages;
 		$response["nextPageKey"] = (string)$nextPageKey;
@@ -115,16 +151,54 @@ class LayarPOIServer {
 		$response["errorCode"] = 0;
 		$response["errorString"] = "ok";
 		$response["hotspots"] = array();
+		if ($radius) {
+			$radius *= 1.25; // extend radius with 25% to avoid far away POI's dropping off when location changes
+			$response["radius"] = intval($radius);
+		}
 		foreach ($pois as $poi) {
-			$i = count($response["hotspots"]);
-			$response["hotspots"][$i] = $poi->toArray();
+			// test if current POI was requested and should be in focus
+			if ($poi->id == @$this->filter->requestedPoiId) {
+				$poi->inFocus = true;
+			}
+			
+			$aPoi = $poi->toArray();
+			// strip out optional fields to cut on bandwidth
+			foreach ($this->optionalPOIFieldsDefaults as $field => $defaultValue) {
+				// strip param from reponse if equal to default
+				//
+				// A note on the @ operator here:
+				// there is a slight difference in PHP between an undefined variable
+				// and one that has been defined and set to NULL. There is NO clean way
+				// right now to distinguish between the two as isset() returns FALSE
+				// on both cases, empty() returns TRUE on both cases and no other
+				// function will take an undefined variable without raising a warning
+				if (@$aPoi[$field] == $defaultValue) {
+					unset($aPoi[$field]);
+				}
+			}
+			foreach($aPoi["actions"] as &$action) {
+				foreach($this->optionalActionFieldsDefaults as $field => $defaultValue) {
+					if (@$action[$field] == $defaultValue) {
+						unset($action[$field]);
+					}
+				}
+			}
 			// upscale coordinate values and truncate to int because of inconsistencies in Layar API
 			// (requests use floats, responses use integers?)
-			$response["hotspots"][$i]["lat"] = (int)($response["hotspots"][$i]["lat"] * 1000000);
-			$response["hotspots"][$i]["lon"] = (int)($response["hotspots"][$i]["lon"] * 1000000);
+			$aPoi["lat"] = (int)($aPoi["lat"] * 1000000);
+			$aPoi["lon"] = (int)($aPoi["lon"] * 1000000);
 			// fix some types that are not strings
-			$response["hotspots"][$i]["type"] = (int)$response["hotspots"][$i]["type"];
-			$response["hotspots"][$i]["distance"] = (float)$response["hotspots"][$i]["distance"];
+			$aPoi["type"] = (int)$aPoi["type"];
+			$aPoi["distance"] = (float)$aPoi["distance"];
+			
+			$response["hotspots"][] = $aPoi;
+		}
+
+		// strip out optional global parameters
+		foreach ($this->optionalResponseFieldsDefaults as $field => $defaultValue) {
+			if (@$response[$field] == $defaultValue) {
+				unset($response[$field]);
+			}
 		}
 
 		/* Set the proper content type */
@@ -223,7 +297,13 @@ class LayarPOIServer {
 				break;
 			case "pageKey":
 			case "lang":
+			case "countryCode":
+			case "layerName":				
+			case "version":	
 				$result->$key = $value;
+				break;
+			case "requestedPoiId":				
+				$result->$key = ($value == 'None') ? null : $value;
 				break;
 			case "timestamp":
 			case "accuracy":
@@ -273,11 +353,16 @@ class LayarPOIServer {
 				break;
 			}
 		}
+		// As of 20100601 Format is: Layar/x.y [OS name]/x.y.z ([Brand] [Model])
+		if (isset($_SERVER['HTTP_USER_AGENT'])) {
+			$result->userAgent = $_SERVER['HTTP_USER_AGENT'];
+		}
 
 		if (!empty($_COOKIE[$_REQUEST["layerName"] . "Id"])) {
 			$result->porpoiseUID = $_COOKIE[$_REQUEST["layerName"] . "Id"];
 		}
 
+		$this->filter = $result;
 		return $result;
 	}
 }
