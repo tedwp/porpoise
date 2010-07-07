@@ -1,0 +1,62 @@
+- added new request parameters:
+	- requestedPoiId
+	- version
+	- userAgent	
+- added new response parameters
+	- doNotIndex
+	- inFocus
+- added logic to always try to return requestedPoiId, even when not in range
+- if requestedPoiId is set, the corresponding POI gets flagged with "inFocus: true"
+- trim out optional response parameters to save bandwidth
+- changes to log handler
+
+= Branch 0.71+oAuth
+- moved layers directory one level up, so deployment files for layers are
+  no longer part of the main PorPOISe distribution tree, see INSTALL
+- fix in webApp oAuth handler, now supports lazy loading of user credentials
+  and deferred oAuth initialization
+- added caching to layer server so subsequent page requests are served from
+  cache rather than calculated all over again
+- added webApiPoiconnector for making authenitcated API calls to 3rd party
+  services for POI requests
+- added web-app subclass settings to PorPOISe config
+
+= Release 0.71 =
+- added support for the "lang" parameter in the Filter class
+- changed the precision of lat/lon in the default database from FLOAT to
+  DOUBLE PRECISION to prevent severe rounding errors
+- fixed a bug where the accuracy parameter was deemed mandatory while it is
+  optional
+
+= Release 0.7a =
+- Fixed a bug in the dashboard
+
+= Release 0.7 =
+- Support for filter hooks (see Wiki for instructions)
+- Support for authenticated layers
+- All POICollectors are renamed to POIConnectors, it describes their function
+  better
+
+= Release 0.51a =
+- Fixed a bug in SQLPOICollector
+
+= Release 0.51 =
+- Support for actions in the dashboard
+
+= Release 0.5 =
+- Dashboard for managing POIs through web interface
+- Support for v3 Layars with 3D-objects
+
+= Release 0.3 =
+- Added support for XSL style sheets
+- Added better UTF-8 handling for databases
+
+= Release 0.2a =
+- Bug fix: "type" was formatted as a string in the JSON response, but should
+  have been int. Fixed now
+
+= Release 0.2 =
+- Added XML support
+
+= Release 0.1 =
+- Initial release
