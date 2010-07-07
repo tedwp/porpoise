@@ -1,16 +1,15 @@
 README directory layers
 
-Classes in this directory will be used to override their default base classes.
+Put configuration file and layer specific files in this directory.
 
-File names and Class names are constructed as follows:
+The move this directory outside the PorPOISe directory, 
+so you can keep configuration and layer specific files 
+separate from the PorPOISe source distribution.
 
-- Capitalize layer name
-- Append base class name
+Files to put here:
 
-Example, to override WebApp for layer "test":
-
-- Layer name: test
-- Base class: WebApp
-- subclass name: TestWebApp
-- file: layers/TestWebApp.php
- 
+config.xml - PorPOISe configuration
+POI filter subclasses
+WebApp subclasses
+WebApp templates
+XML poi files

@@ -13,29 +13,24 @@
  */
 
 /**
- * Include POIConnector interface
- */
-require_once("poiconnector.interface.php");
-
-/**
- * POI connector base class
+ * POI connector interface
  *
  * A POI connector is in charge of getting POIs from a specified source.
  * Each specific POI connector should be able to open (connect to) the
- * specified source and get POI information from it somehow. A POIConnector
+ * specified source and get POI information from it somehow. A POIconnector
  * is also in charge of storing POIs in the same format at the same source.
  *
  * @package PorPOISe
  */
-abstract class POIConnector {
+interface iPOIConnector {
 	/**
 	 * Constructor
 	 *
 	 * Providing a source is a minimal requirement
 	 *
-	 * @param string $source
+	 * @param Object $source
 	 */
-	public abstract function __construct($source);
+	public function __construct($source);
 
 	/**
 	 * Return POIs
@@ -49,7 +44,7 @@ abstract class POIConnector {
 	 *
 	 * @throws Exception
 	 */
-	public abstract function getPOIs(Filter $filter = NULL);
+	public function getPOIs(Filter $filter = NULL);
 
 	/**
 	 * Store POIs
@@ -60,7 +55,7 @@ abstract class POIConnector {
 	 * @param string $mode "replace" to replace the current set, "update" to update current set (default)
 	 * @return void
 	 */
-	public abstract function storePOIs(array $pois, $mode = "update");
+	public function storePOIs(array $pois, $mode = "update");
 
 	/**
 	 * Delete a POI
@@ -71,8 +66,8 @@ abstract class POIConnector {
 	 *
 	 * @throws Exception If the source is invalid or the POI could not be deleted
 	 */
-	public abstract function deletePOI($poiID);
-
+	public function deletePOI($poiID);	
+	
 	/**
 	 * Set a (connector-specific) option
 	 *
@@ -85,19 +80,6 @@ abstract class POIConnector {
 	 *
 	 * @return void
 	 */
-	public function setOption($optionName, $optionValue) {
-		/* no generic options defined as of yet */
-	}
-
-	/**
-	 * Determines whether a POI passes the supplied filter options
-	 *
-	 * @param POI $poi
-	 * @param Filter $filter
-	 *
-	 * @return bool
-	 */
-	protected function passesFilter(POI $poi, Filter $filter = NULL) {
-		return TRUE;
-	}
+	public function setOption($optionName, $optionValue);
+	
 }
