@@ -227,7 +227,7 @@ class XMLPOIConnector extends POIConnector {
 			}
 			// build element and convert to DOM
 			//$simpleXMLElement = self::arrayToSimpleXMLElement("poi", $poi->toArray());
-			$simpleXMLElement = new SimpleXMLElement(self::poiToSimpleXMLElement($poi));
+			$simpleXMLElement = self::poiToSimpleXMLElement($poi);
 			$domElement = $domXML->ownerDocument->importNode(dom_import_simplexml($simpleXMLElement), TRUE);
 			if (empty($oldSimpleXMLElements)) {
 				$domXML->appendChild($domElement);
@@ -314,34 +314,40 @@ class XMLPOIConnector extends POIConnector {
 	}
 
 	/**
-	 * Create an XML string representation of a POI
+	 * Create a SimpleXMLElement representation of a POI
 	 *
 	 * @param POI $poi
-	 * @return string
+	 * @return SimpleXMLElement
 	 */
 	public static function poiToSimpleXMLElement(POI $poi) {
-		$result = "<?xml version=\"1.0\"?>\n";
-		$result .= "<poi>\n";
+		$poiElement = new SimpleXMLElement("<" . "?xml version=\"1.0\" encoding=\"UTF-8\"?" . ">\n<poi/>");
 		foreach ($poi as $key => $value) {
 			if ($key == "actions") {
 				foreach ($value as $action) {
-					$result .= sprintf("<action>");
-					$result .= sprintf("<uri>%s</uri><label>%s</label>", $action->uri, $action->label);
+					$actionElement = $poiElement->addChild("action");
+					$actionElement->addChild("uri", str_replace("&", "&amp;", $action->uri));
+					$actionElement->addChild("label", str_replace("&", "&amp;", $action->label));
+/** @todo: add all the 4.1 extra actions */
 					if (!empty($action->autoTriggerRange)) {
-						$result .= sprintf("<autoTriggerRange>%s</autoTriggerRange><autoTriggerOnly>%s</autoTriggerOnly>", $action->autoTriggerRange, $action->autoTriggerOnly);
+						$actionElement->addChild("autoTriggerRange", str_replace("&", "&amp;", $action->autoTriggerRange));
+						$actionElement->addChild("autoTriggerOnly", str_replace("&", "&amp;", $action->autoTriggerOnly));
 					}
-					$result .= sprintf("</action>\n");
 				}
 			} else if ($key == "transform") {
-				$result .= sprintf("<transform><rel>%s</rel><angle>%s</angle><scale>%s</scale></transform>\n", $value->rel, $value->angle, $value->scale);
+				$transformElement = $poiElement->addChild("transform");
+				foreach(array("rel", "angle", "scale") as $elementName) {
+					$transformElement->addChild($elementName, str_replace("&", "&amp;", $poi->$elementName));
+				}
 			} else if ($key == "object") {
-				$result .= sprintf("<object><baseURL>%s</baseURL><full>%s</full><reduced>%s</reduced><icon>%s</icon><size>%s</size></object>\n", $value->baseURL, $value->full, $value->reduced, $value->icon, $value->size);
+				$objectElement = $poiElement->addChild("object");
+				foreach(array("baseURL", "full", "reduced", "icon", "size") as $elementName) {
+					$objectElement->addChild($elementName, str_replace("&", "&amp;", $poi->$elementName));
+				}
 			} else {
-				$result .= sprintf("<%s>%s</%s>\n", $key, $value, $key);
+				$poiElement->addChild($key, str_replace("&", "&amp;", $value));
 			}
 		}
-		$result .= "</poi>";
-		return $result;
+		return $poiElement;
 	}
 
 	/**
