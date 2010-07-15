@@ -40,6 +40,9 @@ Reload the layer on your phone or the API test page and you will see that a sear
 
 {{{
 	public function passesFilter(POI $poi, Filter $filter = NULL) {
+		if (empty($filter)) {
+			return TRUE;
+		}
 		if (empty($filter->searchbox1)) {
 			return TRUE;
 		}
@@ -61,7 +64,7 @@ Reload the layer on your phone or the API test page and you will see that a sear
 	}
 }}}
 
-What we're doing here is _overriding_ a method (class function) of `XMLPOIConnector`, namely `passesFilter()`. Every default `POIConnector` that comes with PorPOISe has a `passesFilter()` method that is called for each POI that is within the client' range. If this method returns boolean TRUE, the POI is included in the response. If the method returns boolean FALSE, the POI is _not_ sent back to the client. By overriding this method, we can define custom behaviour for `MyPOIConnector`. What we do is 1) check if there _is_ a search value and 2) if there is a search value, see if it occurs in either the title or one of the extra lines. If condition 1 or condition 2 holds, the POI under evaluation is suitable to be returned to the client so we return boolean TRUE. If neither holds, the POI is _not_ suitable and we return boolean FALSE.
+What we're doing here is _overriding_ a method (class function) of `XMLPOIConnector`, namely `passesFilter()`. Every default `POIConnector` that comes with PorPOISe has a `passesFilter()` method that is called for each POI that is within the client' range. If this method returns boolean TRUE, the POI is included in the response. If the method returns boolean FALSE, the POI is _not_ sent back to the client. By overriding this method, we can define custom behaviour for `MyPOIConnector`. What we do is 1) check if there is a filter at all (no filter means the call came from the dashboard) 2) check if there is a search value and 3) if there is a search value, see if it occurs in either the title or one of the extra lines. If condition 1 or condition 2 holds, the POI under evaluation is suitable to be returned to the client so we return boolean TRUE. If neither holds, the POI is _not_ suitable and we return boolean FALSE.
 
 Save the file and refresh your layer to check all the changes are correct. If you see your POIs again, everything is fine. Otherwise, check that your accolades match up (for every `{` there should be a matching `}` later in the file). Now try entering a search value (tap the radar in the Layar client to quickly access filters) and see your new filter in effect!
 
