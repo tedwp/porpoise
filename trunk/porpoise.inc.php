@@ -14,8 +14,12 @@
 
 /** Geographic utilities */
 require_once("geoutil.class.php");
+/** Miscellaneous functions */
+require_once("functions.php");
 /** POI classes */
 require_once("poi.class.php");
+/** Response class */
+require_once("layarresponse.class.php");
 /** POI connector abstract class */
 require_once("poiconnector.class.php");
 /** Layer definition */

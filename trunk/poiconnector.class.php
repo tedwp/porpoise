@@ -52,6 +52,19 @@ abstract class POIConnector {
 	public abstract function getPOIs(Filter $filter = NULL);
 
 	/**
+	 * Get a Layar response
+	 *
+	 * @param Filter $filter
+	 *
+	 * @return LayarResponse
+	 *
+	 * @throws Exception
+	 */
+	public function getLayarResponse(Filter $filter) {
+		return $this->getPOIs($filter);
+	}
+
+	/**
 	 * Store POIs
 	 *
 	 * Store a set of POIs

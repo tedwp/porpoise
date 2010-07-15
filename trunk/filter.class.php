@@ -74,6 +74,8 @@ class LayarFilter extends Filter {
 	public $requestedPoiId = NULL;
 	/** @var string version */
 	public $version = NULL;
-	/** @var string userAgent - the Uer-Agent header */
+	/** @var string userAgent - the User-Agent header */
 	public $userAgent = NULL;	
+	/** @var string Specifies whether refresh or update requested */
+	public $action = "refresh";
 }
