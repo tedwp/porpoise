@@ -104,6 +104,7 @@ class XMLPOIConnector extends POIConnector {
 		}
 
 		$result = array();
+		$requestedPOI = NULL;
 
 		$xpathQuery = $this->buildQuery($filter);
 		foreach ($simpleXML->xpath($xpathQuery) as $poiData) {
@@ -153,7 +154,7 @@ class XMLPOIConnector extends POIConnector {
 			} else if (!empty($filter->requestedPoiId) && $filter->requestedPoiId == $poi["id"]) {
 				// always return the requested POI at the top of the list to
 				// prevent cutoff by the 50 POI response limit
-				array_unshift($result, $poi);
+				$requestedPOI = $poi;
 			} else {
 				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
 				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
@@ -164,6 +165,14 @@ class XMLPOIConnector extends POIConnector {
 
 		libxml_use_internal_errors($libxmlErrorHandlingState);
 
+		if (!empty($filter)) {
+			// sort if filter is set
+			$result = objectSort("distance", $result);
+		}
+		if (!empty($requestedPOI)) {
+			// always make sure that the requested POI is the first to be returned
+			array_unshift($result, $requestedPOI);
+		}
 		return $result;
 	}
 

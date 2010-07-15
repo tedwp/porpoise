@@ -1,0 +1,7 @@
+scratch sheet for ToDo's
+
+- add extra POI/Action parameters to dashboard
+- add extra POI/Action parameters to POIConnectors and database schema
+- add layar action to dashboard
+- document changes in directory layout/write upgrading guide
+- add "basedir" configuration option for layers and connectors

@@ -18,31 +18,39 @@
 require_once("poi.class.php");
 
 /**
+ * Requires LayarResponse
+ */
+require_once("layarresponse.class.php");
+
+/**
  * Layer description class
  *
  * @package PorPOISe
  */
 class Layer {
-	// number of POIs returned per page
+	/** @var int number of POIs returned per page */
 	const POIS_PER_PAGE = 10;
 
-	// verify hash or not?
+	/** @var bool verify hash or not? */
+	/** @todo add timeout validation to hash validation */
 	const VERIFY_HASH = TRUE;
 
-	// fields making up this layer
+	/** @var string developer ID */
 	public $developerId;
+	/** @var string developer key for hash verification */
 	public $developerKey;
+	/** @var string layer name */
 	public $layerName;
 	
 	/** @var POIConnector */
 	protected $poiConnector;
 
-	// state variables for returning POI information
-	protected $nearbyPOIs;
+	/** @var LayarResponse The response we're serving */
+	protected $response;
+	/** @var bool Whether or not there are more POIs to be retrieved from the last request */
 	protected $hasMorePOIs;
+	/** @var string key for the next page of POIs */
 	protected $nextPageKey;
-	
-	protected $radius = null;
 
 	/**
 	 * Constructor
@@ -67,24 +75,13 @@ class Layer {
 	}
 
 	/**
-	 * Add a POI to this layer
-	 *
-	 * @return void
-	 */
-	public function addPOI(POI $poi) {
-		$this->pois[] = $poi;
-	}
-
-	/**
 	 * Determines nearby POIs and stores them for later use
 	 *
-	 * Filter $filter
+	 * @param Filter $filter
 	 *
 	 * @return int number of POIs
 	 */
 	public function determineNearbyPOIs(Filter $filter) {
-		$this->nearbyPOIs = array();
-
 		if (isset($filter->pageKey)) {
 			$offset = $filter->pageKey * self::POIS_PER_PAGE;
 		} else {
@@ -95,14 +92,14 @@ class Layer {
 			!$this->session_restore($filter->userID)) && // or when no session data exists
 				!empty($this->poiConnector)) {
 
-					$pois = $this->poiConnector->getPOIs($filter);
+					$this->response = $this->poiConnector->getLayarResponse($filter);
+					$pois = $response->hotspots;
 					
 					foreach($pois as $poi) {
-						if ($poi->distance > $this->radius) {
-							$this->radius = $poi->distance;
+						if ($poi->distance > $this->response->radius) {
+							$this->response->radius = $poi->distance;
 						}
 					}
-					$this->nearbyPOIs = $pois;
 					$this->session_save($filter->userID);
 		}
 		// iterate over POIs and determine max distance
@@ -111,10 +108,31 @@ class Layer {
 		// retrieved, while according to the spec max 50 POIs are displayed.
 		// So limit POIs to max. 50, optionally after sorting by distance.
 		// Maybe make the sorting order a config setting
+		//
+		// JdS 2010-07-08
+		// --- 8< ---
+		// ordering is done by POIConnectors using the most
+		// efficient technique available for the specific data source
+		//
+		// Propose to let POI cutoff be determined by client, not enforce
+		// 50 POI maximum in server
+		// --- >8 ---
+		//
+		// JdS 2010-07-08
+		// --- 8< ---
+		// TODO: rewrite the last part of this method. We're cutting in the
+		// object's response->nearbyPOIs for the final response. This works
+		// because the complete set has already been saved in the session a
+		// few lines before, but this approach is a bit murky. However, other
+		// parts of PorPOISe rely on getNearbyPOIs to return only the POIs
+		// for the current page so if we're gonna separate the POI sets for
+		// the current page and the overall request we need to fix some more
+		// lines than just the next 10 or so
+		// --- >8 ---
 				
 		$this->hasMorePOIs = FALSE;
 		$this->nextPageKey = NULL;
-		$numPois = count($this->nearbyPOIs);
+		$numPois = count($this->response->nearbyPOIs);
 		
 		if ($numPois - $offset > self::POIS_PER_PAGE) {
 			$this->hasMorePOIs = TRUE;
@@ -122,10 +140,10 @@ class Layer {
 		}
 		if ($offset > $numPois) {
 			// no POIs on this page
-			$nearbyPOIs = array();
+			$this->response->nearbyPOIs = array();
 		} else {
 			$limit = min(self::POIS_PER_PAGE, $numPois - $offset);
-			$this->nearbyPOIs = array_slice($this->nearbyPOIs, $offset, $limit);
+			$this->response->nearbyPOIs = array_slice($this->response->nearbyPOIs, $offset, $limit);
 		}
 		if (!$this->hasMorePOIs) {
 			$this->session_delete($filter->userID);
@@ -133,6 +151,13 @@ class Layer {
 		return $numPois;
 	}
 
+	/**
+	 * Initialize session data
+	 *
+	 * @param string $sid
+	 *
+	 * @return void
+	 */
 	// NOTE: session ID needs to be set correctly, see also WebApp class
 	protected function session_init($sid) {
 		if ($sid != session_id($sid)) {
@@ -143,6 +168,18 @@ class Layer {
 		}
 	}
 
+	/**
+	 * Restore session data for an ongoing request
+	 *
+	 * Tries to load response data and already found POIs for an
+	 * ongoing request, i.e. the client is coming back with the
+	 * nextPageKey for more POIs. We cached those POIs in the
+	 * session, this method loads the data
+	 *
+	 * @param string $sid The session ID
+	 *
+	 * @return bool TRUE on success, FALSE if the session or the request is corrupt
+	 */
 	protected function session_restore($sid) {
 		$this->session_init($sid);
 		// sanity check: are we requesting POIs from the same layer?
@@ -150,29 +187,39 @@ class Layer {
 			$this->session_delete($sid);
 			return false;
 		}
-		if (isset($_SESSION['nearbyPOIs'])) {
-			$this->nearbyPOIs = $_SESSION['nearbyPOIs'];
-			$this->radius = (isset($_SESSION['radius'])) ? $_SESSION['radius'] : null;
+		if (isset($_SESSION['response'])) {
+			$this->response = $_SESSION['response'];
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	
+	/**
+	 * Save data for an ongoing request in the session
+	 *
+	 * @param string $sid The session ID
+	 *
+	 * @return void
+	 */
 	protected function session_save($sid) {
 		$this->session_init($sid);
-		$_SESSION['nearbyPOIs'] = $this->nearbyPOIs;
+		$_SESSION["response"] = $this->response;
 		$_SESSION['layerName'] = $this->layerName;
-		$_SESSION['radius'] = $this->radius;
 		session_commit();
 	}
 	
+	/**
+	 * Delete saved session data
+	 *
+	 * @param string $sid The session ID
+	 *
+	 * @return void
+	 */
 	protected function session_delete($sid) {
 		$this->session_init($sid);
-		unset($_SESSION['nearbyPOIs']);
+		unset($_SESSION['response']);
 		unset($_SESSION['layerName']);
-		unset($_SESSION['radius']);
 		session_commit();
 	}
 	
@@ -183,14 +230,14 @@ class Layer {
 	 * @return POI[]
 	 */
 	public function getNearbyPOIs() {
-		return $this->nearbyPOIs;
+		return $this->response->nearbyPOIs;
 	}
 
 		
 	/**
 	 * Get the Layer name
 	 *
-	 * @return string $layerName
+	 * @return string
 	 */
 	public function getLayerName() {
 		return $this->layerName;
@@ -199,10 +246,10 @@ class Layer {
 	/**
 	 * Get the max. radius plus some margin
 	 *
-	 * @return int $radius
+	 * @return int
 	 */
 	public function getRadius() {
-		return $this->radius;
+		return $this->response->radius;
 	}
 	
 	
@@ -218,7 +265,7 @@ class Layer {
 	/**
 	 * Get the key of the next page (if there are more POIs)
 	 *
-	 * @return bool
+	 * @return string
 	 */
 	public function getNextPageKey() {
 		return $this->nextPageKey;

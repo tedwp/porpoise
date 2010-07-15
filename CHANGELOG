@@ -1,14 +1,22 @@
+= Release 0.9
+- added getLayarResponse hook to POIConnector abstract class. This allows
+  you to override reponse defaults, i.e. change refresh interval or set
+  a layer action
 - added new request parameters:
-	- requestedPoiId
-	- version
-	- userAgent	
+  - requestedPoiId
+  - version
+  - userAgent	
+  - action
 - added new response parameters
-	- doNotIndex
-	- inFocus
+  - doNotIndex
+  - inFocus
 - added logic to always try to return requestedPoiId, even when not in range
-- if requestedPoiId is set, the corresponding POI gets flagged with "inFocus: true"
+- if requestedPoiId is set, the corresponding POI gets flagged with
+  "inFocus: true"
 - trim out optional response parameters to save bandwidth
 - changes to log handler
+- added ordering by distance to XMLPOIConnector and FlatPOIConnector
+  (SQLPOIConnector already had it)
 
 = Branch 0.71+oAuth
 - moved layers directory one level up, so deployment files for layers are
