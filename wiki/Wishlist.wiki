@@ -9,3 +9,9 @@ As Layar develops and PorPOISe develops, more is possible with both. Here we col
 ||*Feature*||*Description*||*Intended release*||
 ||More flexible directory layout||Not everybody can set up virtual directories or symbolic links. It would be nice to have more control over PorPOISe's directory layout: code, config, layers and custom connectors separated and configurable||x.x||
 ||CMS integration||The Dashboard is very spartan, but building and maintaining a flashy administration suite is a lot of work. Integrating PorPOISe as a plugin in content management systems like Joomla and Drupal would be the solution.||x.x||
+||Automagic handling of `action=update`||Layar v4.1 supports partial updates. If default POIConnectors would support that it could save bandwidth and thereby load times.||?||
+
+=== Legend ===
+
+||x.x||Feature planned but release number not yet decided||
+||?||Not yet decided if feature will be implemented||
