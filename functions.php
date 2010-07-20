@@ -22,7 +22,7 @@
  
  * @return array
  */ 
-public static function objectSort($field, array $ar, $descending = FALSE) {
+function objectSort($field, array $ar, $descending = FALSE) {
 	// check stop condition
 	if (count($ar) < 2) {
 		return $ar;
