@@ -93,7 +93,7 @@ class Layer {
 				!empty($this->poiConnector)) {
 
 					$this->response = $this->poiConnector->getLayarResponse($filter);
-					$pois = $response->hotspots;
+					$pois = $this->response->hotspots;
 					
 					foreach($pois as $poi) {
 						if ($poi->distance > $this->response->radius) {
