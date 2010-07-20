@@ -61,7 +61,9 @@ abstract class POIConnector {
 	 * @throws Exception
 	 */
 	public function getLayarResponse(Filter $filter) {
-		return $this->getPOIs($filter);
+		$result = new LayarResponse();
+		$result->hotspots = $this->getPOIs($filter);
+		return $result;
 	}
 
 	/**
