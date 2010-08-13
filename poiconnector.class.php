@@ -13,11 +13,6 @@
  */
 
 /**
- * Include POIConnector interface
- */
-require_once("poiconnector.interface.php");
-
-/**
  * POI connector base class
  *
  * A POI connector is in charge of getting POIs from a specified source.

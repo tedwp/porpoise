@@ -13,16 +13,6 @@
  */
 
 /**
- * Requires POI
- */
-require_once("poi.class.php");
-
-/**
- * Requires LayarResponse
- */
-require_once("layarresponse.class.php");
-
-/**
  * Layer description class
  *
  * @package PorPOISe

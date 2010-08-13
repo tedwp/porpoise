@@ -93,11 +93,9 @@ class Action extends Arrayable {
 	 * Constructor
 	 *
 	 * If $source is a string, it must be a URI and a default label will be
-	 * assigned to it
-	 * If $source is an array it is expected to contain elements "label"
-	 * and "uri".
-	 * If $source is an object, it is expected to have members "label" and
-	 * "uri".
+	 * assigned to it, no other properties will be changed.
+	 * If $source is an array or an object all relevent properties will
+	 * be extracted from it.
 	 *
 	 * @param mixed $source
 	 */

@@ -5,11 +5,26 @@
 - added new request parameters:
   - requestedPoiId
   - version
-  - userAgent	
+  - userAgent
   - action
 - added new response parameters
-  - doNotIndex
-  - inFocus
+  - refreshInterval
+  - refreshDistance
+  - fullRefresh
+  - action
+  - responseMessage
+  - hotspot.doNotIndex
+  - hotspot.inFocus
+  - hotspot.showSmallBiw
+  - hotspot.showBiwOnClick
+  - action.contentType
+  - action.method
+  - action.activityType
+  - action.uri
+  - action.params
+  - action.closeBiw
+  - action.showActivity
+  - action.activityMessage
 - added logic to always try to return requestedPoiId, even when not in range
 - if requestedPoiId is set, the corresponding POI gets flagged with
   "inFocus: true"

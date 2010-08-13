@@ -20,6 +20,12 @@
 class GeoUtil {
 	// source: http://en.wikipedia.org/wiki/Great-circle_distance
 	const EARTH_RADIUS = 6371010;	// meters
+	// approximation at the 45th degree latitude
+	// source: http://en.wikipedia.org/wiki/Longitude#Degree_length
+	const NORTH_SOUTH_RADIUS = 6367380;
+	// approximation at the 45th degree latitude
+	// source: http://en.wikipedia.org/wiki/Longitude#Degree_length
+	const EAST_WEST_RADIUS = 6388840;
 
 	/**
 	 * Calculate the great-circle distance between 2 points on earth
@@ -61,5 +67,31 @@ class GeoUtil {
 		);
 		$result = self::EARTH_RADIUS * $deltaSigma;
 		return $result;
+	}
+
+	/**
+	 * Calculate the latitude difference for moving $distance meters
+	 * north or south at the given latitude
+	 *
+	 * @param float $distance in meters
+	 * @param float $lat in degrees
+	 *
+	 * @return float
+	 */
+	public static function getLatitudinalDistance($distance, $lat) {
+		return ((float)$distance) / ((M_PI / 180) * self::NORTH_SOUTH_RADIUS);
+	}
+
+	/**
+	 * Calculate the longitude difference for moving $distance meters
+	 * east or west at the given latitude
+	 *
+	 * @param float $distance in meters
+	 * @param float $lat in degrees
+	 *
+	 * @return float
+	 */
+	public static function getLongitudinalDistance($distance, $lat) {
+		return ((float)$distance) / ((M_PI / 180) * cos($lat) * self::EAST_WEST_RADIUS);
 	}
 }

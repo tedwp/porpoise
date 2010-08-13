@@ -4,7 +4,7 @@
 ini_set('display_errors', 1);
 
 chdir(dirname(__FILE__) . "/..");
-require_once('web-app.class.php');
+require_once("porpoise.inc.php");
 
 
 /* use most strict warnings, enforces neat and correct coding */
@@ -13,7 +13,7 @@ error_reporting(E_ALL | E_STRICT);
 	
 /* open config file */
 try {
-	$config = new PorPOISeConfig("layers/config.xml");
+	$config = new PorPOISeConfig("config.xml");
 } catch (Exception $e) {
 	printf("Error loading configuration: %s", $e->getMessage());
 }

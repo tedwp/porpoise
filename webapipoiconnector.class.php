@@ -15,27 +15,6 @@
  */
 
 /**
- * Requires POI classes
- */
-require_once("poi.class.php");
-
-/**
- * Requires iPOIConnector interface
- */
-require_once("poiconnector.interface.php");
-
-/**
- * Requires GeoUtils
- */
-require_once("geoutil.class.php");
-
-
-/**
- * Requires WebApp class
- */
-require_once("web-app.class.php");
-
-/**
  * POI connector from http API services
  *
  * @package PorPOISe
