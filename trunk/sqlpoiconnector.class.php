@@ -16,21 +16,6 @@
  */
 
 /**
- * Requires POI classes
- */
-require_once("poi.class.php");
-
-/**
- * Requires POIConnector class
- */
-require_once("poiconnector.class.php");
-
-/**
- * Requires GeoUtils
- */
-require_once("geoutil.class.php");
-
-/**
  * POI connector from SQL databases
  *
  * @package PorPOISe

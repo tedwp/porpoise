@@ -31,7 +31,7 @@ class DML {
 	 * @return PorPOISeConfig
 	 */
 	static public function getConfiguration() {
-		return new PorPOISeConfig("layers/config.xml");
+		return new PorPOISeConfig("config.xml");
 	}
 
 	/**

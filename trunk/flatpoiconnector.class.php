@@ -13,21 +13,10 @@
  */
 
 /**
- * Requires POI class
- */
-require_once("poi.class.php");
-
-/**
- * Requires POIConnector class
- */
-require_once("poiconnector.class.php");
-/**
- * Requires GeoUtil
- */
-require_once("geoutil.class.php");
-
-/**
  * POI connector from "flat" files
+ *
+ * @deprecated Since 1.0, flat files do not support all Layar
+ * functionality
  *
  * @package PorPOISe
  */
@@ -60,6 +49,7 @@ class FlatPOIConnector extends POIConnector {
 	 */
 	public function getPOIs(Filter $filter = NULL) {
 		$file = @file($this->source);
+
 		if (empty($file)) {
 			throw new Exception("File not readable or empty");
 		}
@@ -136,13 +126,13 @@ class FlatPOIConnector extends POIConnector {
 			}
 			if (empty($filter)) {
 				$result[] = $poi;
-			} else if (!empty($filter->requestedPoiId) && $filter->requestedPoiId == $poi["id"]) {
-				// always return the requested POI at the top of the list to
-				// prevent cutoff by the 50 POI response limit
-				$requestedPOI = $poi;
 			} else {
 				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
-				if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
+				if (!empty($filter->requestedPoiId) && $filter->requestedPoiId == $poi["id"]) {
+					// always return the requested POI at the top of the list to
+					// prevent cutoff by the 50 POI response limit
+					$requestedPOI = $poi;
+				} else if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
 					$result[] = $poi;
 				}
 			}

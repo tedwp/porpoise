@@ -1,7 +1,16 @@
 scratch sheet for ToDo's
 
-- add extra POI/Action parameters to dashboard
+1.0beta1
+- update db schema for extra action parameters
+- update db schema for layer action
+- write reading/writing logic for whole layer action for xml and sql connector
++ add "basedir" configuration option for layers and connectors
++ deprecate FlatPOIConnector
+
+1.0beta2
+- write converter for FlatPOIConnector
 - add extra POI/Action parameters to POIConnectors and database schema
-- add layar action to dashboard
+- add extra POI/Action parameters to dashboard
+- add layer action to dashboard
 - document changes in directory layout/write upgrading guide
-- add "basedir" configuration option for layers and connectors
+

@@ -19,18 +19,8 @@
  * @package PorPOISe
  */
 
-/** Requires POI definition */
-require_once("poi.class.php");
-/** Requires Layer definition */
-require_once("layer.class.php");
-/** Requires LayarFilter */
-require_once("filter.class.php");
-/** Requires FlatPOIConnector */
-require_once("flatpoiconnector.class.php");
-/** Requires FlatPOIConnector */
-require_once("xmlpoiconnector.class.php");
-/** Requires SQLPOIConnector */
-require_once("sqlpoiconnector.class.php");
+/** requires most of PorPOISe base files */
+require_once("porpoise.inc.php");
 
 /**
  * Server class that serves up POIs for Layar
@@ -373,9 +363,9 @@ class LayarPOIServer {
  * @package PorPOISe
  */
 class LayarPOIServerFactory {
-	/** @var $developerId */
+	/** @var Developer ID */
 	protected $developerId;
-	/** @var $developerKey */
+	/** @var Developer key */
 	protected $developerKey;
 
 	/**
@@ -522,7 +512,7 @@ class LayarPOIServerFactory {
 			$layer = new Layer($definition->name, $this->developerId, $this->developerKey);
 			if ($definition->getSourceType() == LayerDefinition::DSN) {
 				$poiConnector = new $definition->connector($definition->source["dsn"], $definition->source["username"], $definition->source["password"]);
-			} else {
+			} else if ($definition->getSourceType() == LayerDefinition::FILE) {
 				$poiConnector = new $definition->connector($definition->source);
 			}
 			foreach ($definition->connectorOptions as $optionName => $option) {

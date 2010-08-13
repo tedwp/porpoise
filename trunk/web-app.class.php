@@ -13,17 +13,8 @@
  */
 
 
-/** OAuth aware HTTP client */
-require_once("httprequest.class.php");
-/** configuration */
-require_once("porpoiseconfig.class.php");
-
 /** html template */
-require_once("../layers/template.php");
-
-/** User persistence classes */
-require_once("user.class.php");
-
+require_once(PORPOISE_CONFIG_PATH . DIRECTORY_SEPARATOR . "template.php");
 
 /**
  * Basic web app, handler OAuth login, logout and persistence.

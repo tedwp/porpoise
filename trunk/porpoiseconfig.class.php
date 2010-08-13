@@ -65,7 +65,7 @@ class PorPOISeConfig {
 		/* load the names of connector classes and which files they are in */
 		foreach ($config->xpath("connectors/connector") as $node) {
 			$this->connectors[(string)$node->name] = (string)$node->file;
-		}			
+		}
 
 		/* load layers */
 		foreach ($config->xpath("layers/layer") as $node) {
@@ -77,11 +77,14 @@ class PorPOISeConfig {
 					$def->connectorOptions[$optionNode->getName()] = (string)$optionNode;
 				}
 			}
-			/* make sure we include the connector's definition */
-			if (!empty($this->connectors[$def->connector])) {
-				require_once($this->connectors[$def->connector]);
-			} else {
-				throw new Exception(sprintf("Unknown connector: %s", $def->connector));
+			/* check to see if we need to load the connector */
+			if (!class_exists($def->connector)) {
+				/* include the connector's definition if it exists*/
+				if (!empty($this->connectors[$def->connector])) {
+					require_once($this->connectors[$def->connector]);
+				} else {
+					throw new Exception(sprintf("Unknown connector: %s", $def->connector));
+				}
 			}
 
 			/* load the data source information */
