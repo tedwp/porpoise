@@ -14,7 +14,7 @@
  */
 
 /** All other config is in config.xml */
-define("PORPOISE_CONFIG_PATH", dirname(__FILE__) . DIRECTORY_SEPARATOR . "layers");
+define("PORPOISE_CONFIG_PATH", dirname(__FILE__) . DIRECTORY_SEPARATOR . "config");
 
 /** Geographic utilities */
 require_once("geoutil.class.php");

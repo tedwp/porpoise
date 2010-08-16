@@ -42,8 +42,8 @@ class LayarPOIServer {
 	// layers in this server
 	protected $layers = array();
 
-	protected $requiredFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon");
-	protected $optionalFields = array("accuracy", "RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
+	protected $requiredRequestFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon");
+	protected $optionalRequestFields = array("accuracy", "RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
 	protected $optionalPOIFieldsDefaults = array(
 		"inFocus" => FALSE,
 		"alt" => NULL,
@@ -56,8 +56,9 @@ class LayarPOIServer {
 		"refreshInterval" => NULL,
 		"refreshDistance" => NULL,
 		"fullRefresh" => TRUE,
-		"action" => NULL,
-		"responseMessage" => NULL
+		"actions" => array(),
+		"responseMessage" => NULL,
+		"deletedHotspots" => array()
 	);
 	protected $optionalActionFieldsDefaults = array(
 		"autoTriggerRange" => NULL,
@@ -238,14 +239,14 @@ class LayarPOIServer {
 	 * @return void
 	 */
 	protected function validateRequest() {
-		foreach ($this->requiredFields as $requiredField) {
-			if (empty($_REQUEST[$requiredField])) {
-				throw new Exception(sprintf("Missing parameter: %s", $requiredField));
+		foreach ($this->requiredRequestFields as $requiredRequestField) {
+			if (empty($_REQUEST[$requiredRequestField])) {
+				throw new Exception(sprintf("Missing parameter: %s", $requiredRequestField));
 			}
 		}
-		foreach ($this->optionalFields as $optionalField) {
-			if (!isset($_REQUEST[$optionalField])) {
-				$_REQUEST[$optionalField] = "";
+		foreach ($this->optionalRequestFields as $optionalRequestField) {
+			if (!isset($_REQUEST[$optionalRequestField])) {
+				$_REQUEST[$optionalRequestField] = "";
 			}
 		}
 

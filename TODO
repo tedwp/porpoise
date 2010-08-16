@@ -1,13 +1,17 @@
 scratch sheet for ToDo's
 
 1.0beta1
-- update db schema for extra action parameters
-- update db schema for layer action
-- write reading/writing logic for whole layer action for xml and sql connector
+- implement bounding boxing and test performance (and function)
+ \-> don't forget wraparound at (-)180 degrees
+- change response.action into response.actions, add response.deletedHotspots
+- move XSL to config directory
 + add "basedir" configuration option for layers and connectors
 + deprecate FlatPOIConnector
++ update db schema for extra action parameters
 
 1.0beta2
+- update db schema for layer action
+- write reading/writing logic for whole layer action for xml and sql connector
 - write converter for FlatPOIConnector
 - add extra POI/Action parameters to POIConnectors and database schema
 - add extra POI/Action parameters to dashboard
