@@ -111,7 +111,7 @@ class Layer {
 		// JdS 2010-07-08
 		// --- 8< ---
 		// TODO: rewrite the last part of this method. We're cutting in the
-		// object's response->nearbyPOIs for the final response. This works
+		// object's response->hotspots for the final response. This works
 		// because the complete set has already been saved in the session a
 		// few lines before, but this approach is a bit murky. However, other
 		// parts of PorPOISe rely on getNearbyPOIs to return only the POIs
@@ -122,18 +122,18 @@ class Layer {
 				
 		$this->hasMorePOIs = FALSE;
 		$this->nextPageKey = NULL;
-		$numPois = count($this->response->nearbyPOIs);
+		$numPois = count($this->response->hotspots);
 		
 		if ($numPois - $offset > self::POIS_PER_PAGE) {
-			$this->hasMorePOIs = TRUE;
-			$this->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
+			$this->response->morePages = TRUE;
+			$this->response->nextPageKey = ($offset / self::POIS_PER_PAGE) + 1;
 		}
 		if ($offset > $numPois) {
 			// no POIs on this page
-			$this->response->nearbyPOIs = array();
+			$this->response->hotspots = array();
 		} else {
 			$limit = min(self::POIS_PER_PAGE, $numPois - $offset);
-			$this->response->nearbyPOIs = array_slice($this->response->nearbyPOIs, $offset, $limit);
+			$this->response->hotspots = array_slice($this->response->hotspots, $offset, $limit);
 		}
 		if (!$this->hasMorePOIs) {
 			$this->session_delete($filter->userID);
@@ -217,10 +217,19 @@ class Layer {
 	/**
 	 * Get the nearby POIs determined after calling determineNearbyPOIs()
 	 *
+	 * @deprecated use getResponse()->hotspots now
+	 *
 	 * @return POI[]
 	 */
 	public function getNearbyPOIs() {
-		return $this->response->nearbyPOIs;
+		return $this->response->hotspots;
+	}
+
+	/**
+	 * Get the Layar response
+	 */
+	public function getLayarResponse() {
+		return $this->response;
 	}
 
 		
@@ -249,7 +258,7 @@ class Layer {
 	 * @return bool
 	 */
 	public function hasMorePOIs() {
-		return $this->hasMorePOIs;
+		return $this->response->morePages;
 	}
 
 	/**
@@ -258,7 +267,7 @@ class Layer {
 	 * @return string
 	 */
 	public function getNextPageKey() {
-		return $this->nextPageKey;
+		return $this->response->nextPageKey;
 	}
 
 	/**

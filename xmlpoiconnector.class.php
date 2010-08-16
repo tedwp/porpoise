@@ -138,13 +138,28 @@ class XMLPOIConnector extends POIConnector {
 			if (empty($filter)) {
 				$result[] = $poi;
 			} else {
-				$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
 				if (!empty($filter->requestedPoiId) && $filter->requestedPoiId == $poi["id"]) {
 					// always return the requested POI at the top of the list to
 					// prevent cutoff by the 50 POI response limit
+					$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
 					$requestedPOI = $poi;
-				} else if ((empty($radius) || $poi->distance < $radius + $accuracy) && $this->passesFilter($poi, $filter)) {
-					$result[] = $poi;
+				} else if ($this->passesFilter($poi, $filter)) {
+					if (empty($radius)) {
+						$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+						$result[] = $poi;
+					} else {						
+						// verify if POI falls in bounding box (with 25% margin)
+						$dlat = GeoUtil::getLatitudinalDistance(($radius + $accuracy) * 1.25, $lat);
+						$dlon = GeoUtil::getLongitudinalDistance(($radius + $accuracy) * 1.25, $lat);
+						/** @todo handle wraparound */
+						if ($poi->lat >= $lat - $dlat && $poi->lat <= $lat + $dlat && $poi->lon >= $lon - $dlon && $poi->lon <= $lon + $dlon) {
+							$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
+							// filter passed, see if radius allows for inclusion
+							if ($poi->distance < $radius + $accuracy) {
+								$result[] = $poi;
+							}
+						}
+					}
 				}
 			}
 		}

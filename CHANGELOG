@@ -39,6 +39,8 @@
   constant to reflect the place of your config.xml, custom POIConnectors and
   layer data files. By default, these files now reside in the subdirectory
   "config" of the PorPOISe root directory
+- added bounding boxing to POI selection in XMLPOIConnector. Need larger data
+  sets to test performance gain
 
 = Branch 0.71+oAuth (never released, integrated in 1.0)
 - moved layers directory one level up, so deployment files for layers are
