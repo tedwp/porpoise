@@ -96,26 +96,21 @@ class LayarPOIServer {
 		try {
 			$this->validateRequest();
 			
-			$layer = $this->layers[$_REQUEST["layerName"]];
-			$numPois = $layer->determineNearbyPOIs($filter);
+			$layer = $this->layers[$filter->layerName];
+			$layer->determineNearbyPOIs($filter);
+			$numPois = count($layer->getLayarResponse()->hotspots);
 			if ($loghandler) {
 				$loghandler->log($filter, array('numpois' => $numPois));
 			}
-	
-			$pois = $layer->getNearbyPOIs();
-			if (count($pois) == 0) {
+			if ($numPois == 0) {
 				$this->sendErrorResponse(self::ERROR_CODE_NO_POIS);
 				return;
 			}
-			$morePages = $layer->hasMorePOIs();
-			if ($morePages) {
-				$nextPageKey = $layer->getNextPageKey();
-			} else {
-				$nextPageKey = NULL;
-			}
-			$radius = $layer->getRadius();
-			
-			$this->sendResponse($pois, $morePages, $nextPageKey, $radius);
+	
+			//$this->sendResponse($pois, $morePages, $nextPageKey, $radius);
+			$response = $layer->getLayarResponse();
+			$response->layer = $filter->layerName;
+			$this->sendLayarResponse($response);
 		} catch (Exception $e) {
 			if ($loghandler) {
 				$loghandler->log($filter, array('errorMessage' => $e->getMessage()));
@@ -134,68 +129,81 @@ class LayarPOIServer {
 	 *
 	 * @return void
 	 */
-	protected function sendResponse(array $pois, $morePages = FALSE, $nextPageKey = NULL, $radius = NULL) {
-		$response = array();
-		$response["morePages"] = $morePages;
-		$response["nextPageKey"] = (string)$nextPageKey;
-		$response["layer"] = $_REQUEST["layerName"];
-		$response["errorCode"] = 0;
-		$response["errorString"] = "ok";
-		$response["hotspots"] = array();
-		if ($radius) {
-			$radius *= 1.25; // extend radius with 25% to avoid far away POI's dropping off when location changes
-			$response["radius"] = intval($radius);
-		}
-		foreach ($pois as $poi) {
-			// test if current POI was requested and should be in focus
-			if ($poi->id == @$this->filter->requestedPoiId) {
-				$poi->inFocus = true;
-			}
-			
-			$aPoi = $poi->toArray();
-			// strip out optional fields to cut on bandwidth
-			foreach ($this->optionalPOIFieldsDefaults as $field => $defaultValue) {
-				// strip param from reponse if equal to default
-				//
-				// A note on the @ operator here:
-				// there is a slight difference in PHP between an undefined variable
-				// and one that has been defined and set to NULL. There is NO clean way
-				// right now to distinguish between the two as isset() returns FALSE
-				// on both cases, empty() returns TRUE on both cases and no other
-				// function will take an undefined variable without raising a warning
-				if (@$aPoi[$field] == $defaultValue) {
-					unset($aPoi[$field]);
-				}
-			}
-			foreach($aPoi["actions"] as &$action) {
-				foreach($this->optionalActionFieldsDefaults as $field => $defaultValue) {
-					if (@$action[$field] == $defaultValue) {
-						unset($action[$field]);
+	protected function sendLayarResponse(LayarResponse $response) {
+		$aResponse = array();
+		foreach ($response as $name => $value) {
+			switch($name) {
+			case "layer":
+			case "nextPageKey":
+			case "errorString":
+				$aResponse[$name] = (string)$value;
+				break;
+			case "morePages":
+				$aResponse[$name] = (bool)$response->$name;
+				break;
+			case "errorCode":
+				$aResponse[$name] = (int)$response->$name;
+				break;
+			case "radius":
+				$aResponse[$name] = intval(1.25 * $response->$name); // extend radius with 25% to avoid far away POI's dropping off when location changes
+				break;
+			case "hotspots":
+				foreach ($value as $poi) {
+					// test if current POI was requested and should be in focus
+					if ($poi->id == @$this->filter->requestedPoiId) {
+						$poi->inFocus = true;
 					}
+					
+					$aPoi = $poi->toArray();
+					// strip out optional fields to cut on bandwidth
+					foreach ($this->optionalPOIFieldsDefaults as $field => $defaultValue) {
+						// strip param from reponse if equal to default
+						//
+						// A note on the @ operator here:
+						// there is a slight difference in PHP between an undefined variable
+						// and one that has been defined and set to NULL. There is NO clean way
+						// right now to distinguish between the two as isset() returns FALSE
+						// on both cases, empty() returns TRUE on both cases and no other
+						// function will take an undefined variable without raising a warning
+						if (@$aPoi[$field] == $defaultValue) {
+							unset($aPoi[$field]);
+						}
+					}
+					foreach($aPoi["actions"] as &$action) {
+						foreach($this->optionalActionFieldsDefaults as $field => $defaultValue) {
+							if (@$action[$field] == $defaultValue) {
+								unset($action[$field]);
+							}
+						}
+					}
+					// upscale coordinate values and truncate to int because of inconsistencies in Layar API
+					// (requests use floats, responses use integers?)
+					$aPoi["lat"] = (int)($aPoi["lat"] * 1000000);
+					$aPoi["lon"] = (int)($aPoi["lon"] * 1000000);
+					// fix some types that are not strings
+					$aPoi["type"] = (int)$aPoi["type"];
+					$aPoi["distance"] = (float)$aPoi["distance"];
+					
+					$aResponse["hotspots"][] = $aPoi;
 				}
+				break;
+			default:
+				$aResponse[$name] = $value;
+				break;
 			}
-			// upscale coordinate values and truncate to int because of inconsistencies in Layar API
-			// (requests use floats, responses use integers?)
-			$aPoi["lat"] = (int)($aPoi["lat"] * 1000000);
-			$aPoi["lon"] = (int)($aPoi["lon"] * 1000000);
-			// fix some types that are not strings
-			$aPoi["type"] = (int)$aPoi["type"];
-			$aPoi["distance"] = (float)$aPoi["distance"];
-			
-			$response["hotspots"][] = $aPoi;
 		}
 
 		// strip out optional global parameters
 		foreach ($this->optionalResponseFieldsDefaults as $field => $defaultValue) {
-			if (@$response[$field] == $defaultValue) {
-				unset($response[$field]);
+			if (@$aResponse[$field] == $defaultValue) {
+				unset($aResponse[$field]);
 			}
 		}
 
 		/* Set the proper content type */
 		header("Content-Type: application/json");
 
-		printf("%s", json_encode($response));
+		printf("%s", json_encode($aResponse));
 	}
 
 	/**
