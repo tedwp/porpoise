@@ -320,12 +320,10 @@ class XMLPOIConnector extends POIConnector {
 			if ($key == "actions") {
 				foreach ($value as $action) {
 					$actionElement = $poiElement->addChild("action");
-					$actionElement->addChild("uri", str_replace("&", "&amp;", $action->uri));
-					$actionElement->addChild("label", str_replace("&", "&amp;", $action->label));
-/** @todo: add all the 4.1 extra actions */
-					if (!empty($action->autoTriggerRange)) {
-						$actionElement->addChild("autoTriggerRange", str_replace("&", "&amp;", $action->autoTriggerRange));
-						$actionElement->addChild("autoTriggerOnly", str_replace("&", "&amp;", $action->autoTriggerOnly));
+					foreach ($action as $actionName => $actionValue) {
+						if (!empty($actionValue)) {
+							$actionElement->addChild($actionName, str_replace("&", "&amp;", $actionValue));
+						}
 					}
 				}
 			} else if ($key == "transform") {

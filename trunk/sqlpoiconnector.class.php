@@ -338,7 +338,7 @@ class SQLPOIConnector extends POIConnector {
 	 * @return void
 	 */
 	protected function saveActions($poiID, array $actions) {
-		$actionFields = array("uri", "label", "autoTriggerRange", "autoTriggerOnly");
+		$actionFields = array("uri", "label", "autoTriggerRange", "autoTriggerOnly", "contentType", "method", "activityType", "params", "closeBiw", "showActivity", "activityMessage");
 		$pdo = $this->getPDO();
 
 		// cleanup old

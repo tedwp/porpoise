@@ -1,4 +1,4 @@
-= Release 0.9
+= Release 1.0
 - added getLayarResponse hook to POIConnector abstract class. This allows
   you to override reponse defaults, i.e. change refresh interval or set
   a layer action
@@ -11,8 +11,9 @@
   - refreshInterval
   - refreshDistance
   - fullRefresh
-  - action
+  - actions
   - responseMessage
+  - deletedHotspots
   - hotspot.doNotIndex
   - hotspot.inFocus
   - hotspot.showSmallBiw
@@ -32,8 +33,14 @@
 - changes to log handler
 - added ordering by distance to XMLPOIConnector and FlatPOIConnector
   (SQLPOIConnector already had it)
+- deprecated FlatPOIConnector. FlatPOIConnector does not support the full v4.0
+  API and will not be updated in the future
+- porpoise.inc.php now includes a PORPOISE_CONFIG_PATH definition. Change this
+  constant to reflect the place of your config.xml, custom POIConnectors and
+  layer data files. By default, these files now reside in the subdirectory
+  "config" of the PorPOISe root directory
 
-= Branch 0.71+oAuth
+= Branch 0.71+oAuth (never released, integrated in 1.0)
 - moved layers directory one level up, so deployment files for layers are
   no longer part of the main PorPOISe distribution tree, see INSTALL
 - fix in webApp oAuth handler, now supports lazy loading of user credentials
