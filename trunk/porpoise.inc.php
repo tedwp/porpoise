@@ -13,8 +13,8 @@
  * @package PorPOISe
  */
 
-/** All other config is in config.xml */
-define("PORPOISE_CONFIG_PATH", dirname(__FILE__) . DIRECTORY_SEPARATOR . "config");
+/** For path to configuration root */
+require_once("config.php");
 
 /** Geographic utilities */
 require_once("geoutil.class.php");
