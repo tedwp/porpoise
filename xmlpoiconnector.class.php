@@ -337,9 +337,7 @@ class XMLPOIConnector extends POIConnector {
 				foreach ($value as $action) {
 					$actionElement = $poiElement->addChild("action");
 					foreach ($action as $actionName => $actionValue) {
-						if (!empty($actionValue)) {
-							$actionElement->addChild($actionName, str_replace("&", "&amp;", $actionValue));
-						}
+						$actionElement->addChild($actionName, str_replace("&", "&amp;", $actionValue));
 					}
 				}
 			} else if ($key == "transform") {

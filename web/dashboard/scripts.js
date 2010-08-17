@@ -35,7 +35,8 @@ var GUI = {
 		newRow.appendChild(td);
 		td = document.createElement("td");
 		newRow.appendChild(td);
-		var actionTable = document.createElement("table");
+		new Ajax.Updater ({ success: td }, "gui.php", { parameters: { action: "newAction", index: newIndex }, insertion: "bottom" } );
+		/*var actionTable = document.createElement("table");
 		td.appendChild(actionTable);
 		actionTable.addClassName("action");
 		for (var i = 0; i < 4; i++) {
@@ -76,13 +77,13 @@ var GUI = {
 				select.appendChild(option);
 				valueTd.appendChild(select);
 			} else {
-				/* 'scuse me? */
+				// 'scuse me? 
 				continue;
 			}
 			tr.appendChild(labelTd);
 			tr.appendChild(valueTd);
 			actionTable.appendChild(tr);
-		}
+		}*/
 		var sourceRow = source.up("tr");
 		sourceRow.insert({ before: newRow });
 	}

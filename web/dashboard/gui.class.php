@@ -13,9 +13,6 @@
  * @subpackage Dashboard
  */
 
-// use output buffering so we can prevent output of we want to
-ob_start(array("GUI", "finalize"));
-
 /**
  * GUI class
  *
@@ -135,6 +132,18 @@ HTML;
 		}
 		$result .="</select>\n";
 		return $result;
+	}
+
+	/**
+	 * Create a Yes/No select box
+	 *
+	 * @param string $name
+	 * @param bool $checked
+	 *
+	 * @return string
+	 */
+	protected static function createCheckbox($name, $checked = FALSE) {
+		return self::createSelect($name, array("1" => "Yes", "0" => "No"), $checked ? "1" : "0");
 	}
 
 	/**
@@ -264,6 +273,9 @@ HTML;
 		$result .= sprintf("<tr><td>Attribution</td><td><input type=\"text\" name=\"attribution\" value=\"%s\"></td></tr>\n", $poi->attribution);
 		$result .= sprintf("<tr><td>Image URL</td><td><input type=\"text\" name=\"imageURL\" value=\"%s\"></td></tr>\n", $poi->imageURL);
 		$result .= sprintf("<tr><td>Type</td><td><input type=\"text\" name=\"type\" value=\"%s\" size=\"1\"></td></tr>\n", $poi->type);
+		$result .= sprintf("<tr><td>Prevent indexing</td><td>%s</td></tr>\n", self::createCheckbox("doNotIndex", $poi->doNotIndex));
+		$result .= sprintf("<tr><td>Show small BIW</td><td>%s</td></tr>\n", self::createCheckbox("showSmallBiw", $poi->showSmallBiw));
+		$result .= sprintf("<tr><td>Show BIW when clicked</td><td>%s</td></tr>\n", self::createCheckbox("showBiwOnClick", $poi->showBiwOnClick));
 		$result .= sprintf("<tr><td>Dimension</td><td><input type=\"text\" name=\"dimension\" value=\"%s\" size=\"1\"></td></tr>\n", $poi->dimension);
 		if ($poi->dimension > 1) {
 			$result .= sprintf("<tr><td>Absolute altitude</td><td><input type=\"text\" name=\"alt\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->alt);
@@ -275,8 +287,7 @@ HTML;
 			$result .= sprintf("<tr><td>Model size (approx)</td><td><input type=\"text\" name=\"size\" value=\"%s\" size=\"1\"></td></tr>\n", $poi->object->size);
 			$result .= sprintf("<tr><td>Scaling factor</td><td><input type=\"text\" name=\"scale\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->transform->scale);
 			$result .= sprintf("<tr><td>Vertical rotation</td><td><input type=\"text\" name=\"angle\" value=\"%s\" size=\"1\"></td></tr>\n", $poi->transform->angle);
-			$relOptions = array(TRUE => "Yes", FALSE => "No");
-			$result .= sprintf("<tr><td>Relative angle</td><td>%s</td></tr>\n", self::createSelect("rel", $relOptions, (bool)$poi->transform->rel));
+			$result .= sprintf("<tr><td>Relative angle</td><td>%s</td></tr>\n", self::createCheckbox("rel", $poi->transform->rel));
 		}
 		foreach ($poi->actions as $key => $action) {
 			$result .= sprintf("<tr><td>Action<br><button type=\"button\" onclick=\"GUI.removePOIAction(%s)\">Remove</button></td><td>%s</td></tr>\n", $key, self::createActionSubtable($key, $action));
@@ -297,13 +308,21 @@ HTML;
 	 *
 	 * @return string
 	 */
-	protected static function createActionSubtable($index, POIAction $action) {
+	public static function createActionSubtable($index, POIAction $action) {
 		$result = "";
 		$result .= "<table class=\"action\">\n";
 		$result .= sprintf("<tr><td>Label</td><td><input type=\"text\" name=\"actions[%s][label]\" value=\"%s\"></td></tr>\n", $index, $action->label);
 		$result .= sprintf("<tr><td>URI</td><td><input type=\"text\" name=\"actions[%s][uri]\" value=\"%s\"></td></tr>\n", $index, $action->uri);
 		$result .= sprintf("<tr><td>Auto-trigger range</td><td><input type=\"text\" name=\"actions[%s][autoTriggerRange]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->autoTriggerRange);
-		$result .= sprintf("<tr><td>Auto-trigger only</td><td>%s</td></tr>\n", self::createSelect(sprintf("actions[%s][autoTriggerOnly]", $index), array(TRUE => "Yes", FALSE => "No"), (bool)$action->autoTriggerOnly));
+		$result .= sprintf("<tr><td>Auto-trigger only</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][autoTriggerOnly]", $index), $action->autoTriggerOnly));
+		$result .= sprintf("<tr><td>Content type</td><td><input type=\"text\" name=\"actions[%s][contentType]\" value=\"%s\">\n", $index, $action->contentType);
+		$result .= sprintf("<tr><td>Method</td><td>%s</td></tr>\n", self::createSelect(sprintf("actions[%s][method]", $index), array("GET" => "GET", "POST" => "POST"), $action->method));
+		$result .= sprintf("<tr><td>Activity type</td><td><input type=\"text\" name=\"actions[%s][activityType]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->activityType);
+		$result .= sprintf("<tr><td>Parameters</td><td><input type=\"text\" name=\"actions[%s][params]\" value=\"%s\"></td></tr>\n", $index, $action->params); /** @todo make this something nicer or at least provide instructions */
+		$result .= sprintf("<tr><td>Close BIW on action</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][closeBiw]", $index), $action->closeBiw));
+		$result .= sprintf("<tr><td>Show activity indication</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][showActivity]", $index), $action->showActivity));
+		$result .= sprintf("<tr><td>Activity message</td><td><input type=\"text\" name=\"actions[%s][activityMessage]\" value=\"%s\"></td></tr>\n", $index, $action->activityMessage);
+
 		$result .= "</table>\n";
 
 		return $result;
