@@ -13,6 +13,10 @@
 - open config.xml and remove the <connector> definitions for the
   FlatPOIConnector, XMLPOIConnector and SQLPOIConnector. These have now been
   built in by default and do not need to be in the configuration file anymore
+- open your custom POIConnectors and adjust or remove the references to
+  flatpoiconnector.class.php, xmlpoiconnector.class.php and
+  sqlpoiconnector.class.php. These files are now included by default and do not
+  need explicit inclusion anymore.
 - if you need to or want to, follow the instructions in INSTALL to move the
   "config/" directory to a place of your liking. If PorPOISe is in a
   web-accessible directory this enhances security and, in any case, makes for
