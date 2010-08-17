@@ -89,6 +89,7 @@ class GUI {
 <title>PorPOISe POI Management Interface</title>
 <link rel="stylesheet" type="text/css" href="styles.css">
 <script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script type="text/javascript" src="scripts.js"></script>
 </head>
 <body>
