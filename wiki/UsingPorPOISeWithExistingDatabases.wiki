@@ -33,8 +33,6 @@ However, PorPOISe is designed to create your own `POIConnector`s that suit your 
 {{{
 <?php
 
-require_once("sqlpoiconnector.class.php");
-
 class PropertyPOIConnector extends SQLPOIConnector {
 }
 }}}
@@ -138,8 +136,6 @@ That's it, you're done. The entire `PropertyPOIConnector` class should now look 
 
 {{{
 <?php
-
-require_once("sqlpoiconnector.class.php");
 
 class PropertyPOIConnector extends SQLPOIConnector {
     protected function buildQuery(Filter $filter = NULL) {
