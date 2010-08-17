@@ -26,7 +26,7 @@ class LayarResponse {
 	/** @var string[] When sending a POI update (instead of a full refresh), this specifies hotspots to delete from the previous set */
 	public $deletedHotspots = array();
 	/** @var int Radius containing the returned POI set */
-	public $radius;
+	public $radius = 0;
 	/** @var int Refresh interval in seconds */
 	public $refreshInterval = NULL;
 	/** @var int Refresh distance in meters */
@@ -37,4 +37,14 @@ class LayarResponse {
 	public $responseMessage = NULL;
 	/** @var Action[] */
 	public $actions = array();
+	/** @var bool */
+	public $morePages = FALSE;
+	/** @var string */
+	public $nextPageKey = NULL;
+	/** @var string */
+	public $layer = NULL;
+	/** @var int */
+	public $errorCode = 0;
+	/** @var string */
+	public $errorString = "ok";
 }

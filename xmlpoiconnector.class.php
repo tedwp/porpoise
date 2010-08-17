@@ -79,6 +79,9 @@ class XMLPOIConnector extends POIConnector {
 		$lon = $filter->lon;
 		$radius = $filter->radius;
 		$accuracy = $filter->accuracy;
+		// calculate here to prevent recalculation on each foreach loop later
+		$dlat = GeoUtil::getLatitudinalDistance(($radius + $accuracy) * 1.25, $lat);
+		$dlon = GeoUtil::getLongitudinalDistance(($radius + $accuracy) * 1.25, $lat);
 
 		if(!empty($this->styleSheetPath)) {
 			$simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
@@ -149,8 +152,6 @@ class XMLPOIConnector extends POIConnector {
 						$result[] = $poi;
 					} else {						
 						// verify if POI falls in bounding box (with 25% margin)
-						$dlat = GeoUtil::getLatitudinalDistance(($radius + $accuracy) * 1.25, $lat);
-						$dlon = GeoUtil::getLongitudinalDistance(($radius + $accuracy) * 1.25, $lat);
 						/** @todo handle wraparound */
 						if ($poi->lat >= $lat - $dlat && $poi->lat <= $lat + $dlat && $poi->lon >= $lon - $dlon && $poi->lon <= $lon + $dlon) {
 							$poi->distance = GeoUtil::getGreatCircleDistance(deg2rad($lat), deg2rad($lon), deg2rad($poi->lat), deg2rad($poi->lon));
