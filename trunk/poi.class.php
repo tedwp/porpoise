@@ -103,7 +103,6 @@ class Action extends Arrayable {
 		if (empty($source)) {
 			return;
 		}
-
 		$optionalFields = array("contentType", "method", "activityType", "params", "closeBiw", "showActivity", "activityMessage");
 
 		if (is_string($source)) {

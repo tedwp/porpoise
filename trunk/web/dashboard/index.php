@@ -19,6 +19,9 @@ require_once("dashboard.inc.php");
 /** authorization */
 require_once("authorize.inc.php");
 
+// use output buffering so we can prevent output of we want to
+ob_start(array("GUI", "finalize"));
+
 /* basic request validation */
 if (empty($_REQUEST["action"])) {
 	$_action = "main";
