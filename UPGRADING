@@ -1,0 +1,24 @@
+===PorPOISe upgrading instructions===
+
+= Upgrading from 0.7x to 1.0 =
+
+- backup all your customized files: config.xml, .tab/.xml data files, custom
+  POIConnectors, your own XSL files and the users file for the Dashboard.
+  Alternatively, just backup your entire PorPOISe directory
+- Unpack the 1.0 release
+- move your config.xml, layer data files and custom POIConnectors into the new
+  "config/" subdirectory
+- move your XSL files into the new "config/xsl" subdirectory
+- move the Dashboard users file into its old location, "web/dashboard"
+- open config.xml and remove the <connector> definitions for the
+  FlatPOIConnector, XMLPOIConnector and SQLPOIConnector. These have now been
+  built in by default and do not need to be in the configuration file anymore
+- if you need to or want to, follow the instructions in INSTALL to move the
+  "config/" directory to a place of your liking. If PorPOISe is in a
+  web-accessible directory this enhances security and, in any case, makes for
+  easier upgrading
+
+N.B. as of release 1.0 the FlatPOIConnector is deprecated and will no longer be
+supported. If you're using the FlatPOIConnector for your layers and need help
+converting to XML or database, let us know in the PorPOISe Google Group
+http://groups.google.com/group/porpoise
