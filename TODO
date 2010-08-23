@@ -13,10 +13,10 @@ scratch sheet for ToDo's
 + update db schema for layer action
 + write reading logic for whole layer action for xml connector
 - write reading logic for whole layer action for sql connector
-- write writing logic for whole layer action for xml connector
-- write writing logic for whole layer action for sql connector
++ write writing logic for whole layer action for xml connector
++ write writing logic for whole layer action for sql connector
 - add whole layer action to dashboard
-? write converter for FlatPOIConnector
++ write converter for FlatPOIConnector
 + add extra POI/Action parameters to POIConnectors and database schema
 + add extra POI/Action parameters to dashboard
 - write database upgrading script

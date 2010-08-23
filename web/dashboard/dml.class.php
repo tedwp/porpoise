@@ -195,6 +195,7 @@ class DML {
 		$toPOIConnector = self::getPOIConnector($to);
 
 		$layerContents = $fromPOIConnector->getLayarResponse();
+		$layerContents->layer = $to;
 		$toPOIConnector->storePOIs($layerContents->hotspots, "replace");
 		$toPOIConnector->storeLayerProperties($layerContents);
 	}

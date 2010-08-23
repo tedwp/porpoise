@@ -97,6 +97,7 @@ class GUI {
 <div class="menu">
  <a href="?logout=true">Log out</a>
  <a href="?action=main">Home</a>
+ <a href="?action=migrate">Copy layers</a>
 </div>
 
 <div class="main">
@@ -278,9 +279,9 @@ HTML;
 		$result .= sprintf("<tr><td>Show small BIW</td><td>%s</td></tr>\n", self::createCheckbox("showSmallBiw", $poi->showSmallBiw));
 		$result .= sprintf("<tr><td>Show BIW when clicked</td><td>%s</td></tr>\n", self::createCheckbox("showBiwOnClick", $poi->showBiwOnClick));
 		$result .= sprintf("<tr><td>Dimension</td><td><input type=\"text\" name=\"dimension\" value=\"%s\" size=\"1\"></td></tr>\n", $poi->dimension);
+		$result .= sprintf("<tr><td>Absolute altitude</td><td><input type=\"text\" name=\"alt\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->alt);
+		$result .= sprintf("<tr><td>Relative altitude</td><td><input type=\"text\" name=\"relativeAlt\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->relativeAlt);
 		if ($poi->dimension > 1) {
-			$result .= sprintf("<tr><td>Absolute altitude</td><td><input type=\"text\" name=\"alt\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->alt);
-			$result .= sprintf("<tr><td>Relative altitude</td><td><input type=\"text\" name=\"relativeAlt\" value=\"%s\" size=\"2\"></td></tr>\n", $poi->relativeAlt);
 			$result .= sprintf("<tr><td>Base URL for model</td><td><input type=\"text\" name=\"baseURL\" value=\"%s\"></td></tr>\n", $poi->object->baseURL);
 			$result .= sprintf("<tr><td>Full model</td><td><input type=\"text\" name=\"full\" value=\"%s\"></td></tr>\n", $poi->object->full);
 			$result .= sprintf("<tr><td>Reduced model</td><td><input type=\"text\" name=\"reduced\" value=\"%s\"></td></tr>\n", $poi->object->reduced);
@@ -404,8 +405,7 @@ HTML;
 		$result = "";
 		$layers = DML::getLayers();
 		$layers = array_combine($layers, $layers);
-		$result .= sprintf("<form method=\"POST\" action=\"%s\">\n", $_SERVER["PHP_SELF"]);
-		$result .= sprintf("<input type=\"hidden\" name=\"action\" value=\"migrate\">\n");
+		$result .= sprintf("<form method=\"POST\" action=\"%s?action=migrate\">\n", $_SERVER["PHP_SELF"]);
 		$result .= sprintf("<p>Copy from %s to %s <button type=\"submit\">Copy</button></p>\n", GUI::createSelect("from", $layers), GUI::createSelect("to", $layers));
 		$result .= sprintf("<p>Warning: copying contents will overwrite any old data in the destination layer</p>\n");
 		$result .= "</form>\n";
