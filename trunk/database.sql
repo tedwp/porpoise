@@ -1,6 +1,6 @@
 -- MySQL dump 10.11
 --
--- Host: localhost    Database: porpoise
+-- Host: localhost    Database: eduroamtest
 -- ------------------------------------------------------
 -- Server version	5.0.67-0ubuntu6.1
 
@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `Action`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `Action` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL auto_increment,
   `uri` varchar(1024) default NULL,
   `label` varchar(255) default NULL,
   `poiId` int(11) default NULL,
@@ -34,10 +34,12 @@ CREATE TABLE `Action` (
   `closeBiw` tinyint(1) default '0',
   `showActivity` tinyint(1) default '1',
   `activityMessage` varchar(255) default NULL,
+  `autoTriggerRange` int(11) default NULL,
+  `autoTriggerOnly` tinyint(1) default '0',
   PRIMARY KEY  (`id`),
   KEY `poiId` (`poiId`),
   CONSTRAINT `Action_ibfk_1` FOREIGN KEY (`poiId`) REFERENCES `POI` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -48,14 +50,14 @@ DROP TABLE IF EXISTS `Layer`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `Layer` (
-  `name` varchar(255) default NULL,
+  `layer` varchar(255) default NULL,
   `refreshInterval` int(11) default NULL,
   `refreshDistance` int(11) default NULL,
   `fullRefresh` tinyint(1) default '1',
   `showMessage` varchar(1024) default NULL,
   `id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -84,7 +86,7 @@ DROP TABLE IF EXISTS `POI`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `POI` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL auto_increment,
   `attribution` varchar(255) default NULL,
   `imageURL` varchar(1024) default NULL,
   `lat` double default NULL,
@@ -98,8 +100,11 @@ CREATE TABLE `POI` (
   `showSmallBiw` tinyint(1) default '1',
   `showBiwOnClick` tinyint(1) default '1',
   `layerID` int(11) default NULL,
+  `dimension` int(11) default NULL,
+  `alt` int(11) default NULL,
+  `relativeAlt` int(11) default NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=953803 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -127,4 +132,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-08-20 13:19:32
+-- Dump completed on 2010-08-23 18:26:26

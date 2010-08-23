@@ -215,6 +215,44 @@ class SQLPOIConnector extends POIConnector {
 		}
 	}
 
+	public function storeLayerProperties(LayarResponse $response) {
+		$layerFields = array("layer", "refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
+		try {
+			// let's find out if this layer already exists
+			$newLayer = TRUE;
+			$pdo = $this->getPDO();
+			$sql = "SELECT * FROM Layer WHERE layer=?";
+			$stmt = $pdo->prepare($sql);
+			$stmt->execute(array($response->layer));
+			if ($stmt->fetch()) {
+				$newLayer = FALSE;
+				$sql = "UPDATE Layer SET ";
+				$ar = array();
+				foreach ($layerFields as $layerField) {
+					if ($layerField != "layer") {
+						$ar[] = sprintf("%s=:%s", $layerField, $layerField);
+					}
+				}
+				$sql .= implode(",", $ar);
+				$sql .= " WHERE layer=:layer";
+			} else {
+				$sql = "INSERT INTO Layer (";
+				$sql .= implode(",", $layerFields);
+				$sql .= ") VALUES (:";
+				$sql .= implode(",:", $layerFields);
+				$sql .= ")";
+			}
+			$stmt->closeCursor();
+			$stmt = $pdo->prepare($sql);
+			foreach ($layerFields as $layerField) {
+				$stmt->bindValue(":" . $layerField, $response->$layerField);
+			}
+			$stmt->execute();
+		} catch (PDOException $e) {
+			throw new Exception("Database error: " . $e->getMessage());
+		}
+	}
+
 	/**
 	 * Delete a POI
 	 *
@@ -285,7 +323,7 @@ class SQLPOIConnector extends POIConnector {
 	 */
 	protected function savePOI(POI $poi) {
 		$pdo = $this->getPDO();
-		$poiFields = array("alt","attribution","dimension","id","imageURL","lat","lon","line2","line3","line4","relativeAlt","title","type","doNotIndex","showSmallBiw","showBiwOnClick");
+		$poiFields = array("alt","attribution","dimension","imageURL","lat","lon","line2","line3","line4","relativeAlt","title","type","doNotIndex","showSmallBiw","showBiwOnClick");
 		
 		// is this a new POI or not?
 		$isNewPOI = TRUE;
@@ -318,7 +356,7 @@ class SQLPOIConnector extends POIConnector {
 			$stmt->bindValue(":id", $poi->id);
 		}
 		$stmt->execute();
-		if (!isset($poi->id)) {
+		if ($isNewPOI) {
 			$poi->id = $pdo->lastInsertId();
 		}
 		$this->saveActions($poi->id, $poi->actions);
