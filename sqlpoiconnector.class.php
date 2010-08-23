@@ -28,7 +28,7 @@ class SQLPOIConnector extends POIConnector {
 	/** @var string password */
 	protected $password;
 	/** @var PDO PDO instance */
-	protected $pdo;
+	protected $pdo = NULL;
 
 	/**
 	 * Constructor
@@ -179,6 +179,75 @@ class SQLPOIConnector extends POIConnector {
 	}
 
 	/**
+	 * Return a Layar response
+	 *
+	 * @param Filter $filter
+	 *
+	 * @return LayarResponse
+	 */
+	public function getLayarResponse(Filter $filter = NULL) {
+		$pdo = $this->getPDO();
+
+		$result = new LayarResponse();
+
+		$sql = "SELECT * FROM Layer";
+		if (!empty($filter)) {
+			$sql .= " WHERE layer=:layerName";
+		}
+		$stmt = $pdo->prepare($sql);
+		if (!empty($filter)) {
+			$stmt->bindValue(":layerName", $filter->layerName);
+		}
+		$stmt->execute();
+		if (!($row = $stmt->fetch())) {
+			throw new Exception("No matching layer found");
+		}
+
+		foreach($row as $name => $value) {
+			switch($name) {
+			case "refreshInterval":
+			case "refreshDistance":
+				$result->$name = (int)$value;
+				break;
+			case "fullRefresh":
+				$result->$name = (bool)((string)$value);
+				break;
+			case "showMessage":
+				$result->$name = (string)$value;
+				break;
+			default:
+				// not relevant
+				break;
+			}
+		}
+
+		$result->actions = $this->getLayerActions($filter);
+
+		$result->hotspots = $this->getPOIs($filter);
+
+		return $result;
+	}
+
+	/**
+	 * Get a layer's actions
+	 *
+	 * @param Filter $filter
+	 *
+	 * @return Action[]
+	 */
+	protected function getLayerActions(Filter $filter = NULL) {
+		$pdo = $this->getPDO();
+		$sql = "SELECT * FROM Action WHERE poiId IS NULL";	/** @todo nasty, gotta fix that later */
+		$stmt = $pdo->prepare($sql);
+		$stmt->execute();
+		$result = array();
+		while ($row = $stmt->fetch()) {
+			$result[] = new Action($row);
+		}
+		return $result;
+	}
+
+	/**
 	 * Store POIs
 	 *
 	 * @param POI[] $pois
@@ -215,6 +284,19 @@ class SQLPOIConnector extends POIConnector {
 		}
 	}
 
+	/**
+	 * Save layer properties
+	 *
+	 * Note: uses LayarResponse as transport for properties but will not
+	 * save the contents of $properties->hotspots. Use storePOIs for that
+	 *
+	 * @param LayarResponse $properties
+	 * @param bool $asString
+	 *
+	 * @return void
+	 *
+	 * @throws Exception
+	 */
 	public function storeLayerProperties(LayarResponse $response) {
 		$layerFields = array("layer", "refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
 		try {

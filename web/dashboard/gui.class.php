@@ -219,6 +219,18 @@ HTML;
 			$result .= "none\n";
 		}
 		$result .= "</p>\n";
+		$result .= sprintf("<form action=\"?action=layer&layerName=%s\" method=\"POST\">\n", $layerName);
+
+		$layerProperties = DML::getLayerProperties($layerName);
+		$result .= sprintf("<table>\n");
+		$result .= sprintf("<tr><td>Response message</td><td><input type=\"text\" name=\"showMessage\" value=\"%s\"></td></tr>\n", $layerProperties->showMessage);
+		$result .= sprintf("<tr><td>Refresh interval</td><td><input type=\"text\" name=\"refreshInterval\" value=\"%s\"></td></tr>\n", $layerProperties->refreshInterval);
+		$result .= sprintf("<tr><td>Refresh distance</td><td><input type=\"text\" name=\"refreshDistance\" value=\"%s\"></td></tr>\n", $layerProperties->refreshDistance);
+		$result .= sprintf("<tr><td>Full refresh</td><td>%s</td></tr>\n", self::createCheckbox("fullRefresh", $layerProperties->fullRefresh));
+		$result .= sprintf("<caption><button type=\"submit\">Save</button></caption>\n");
+		$result .= sprintf("</table>\n");
+		$result .= sprintf("</form>\n");
+
 		$result .= sprintf("<p><a href=\"?action=newPOI&layerName=%s\">New POI</a></p>\n", urlencode($layerName));
 		$result .= self::createPOITable($layerName);
 		return $result;
@@ -448,6 +460,11 @@ HTML;
 		case "migrate":
 			DML::migrateLayers($_REQUEST["from"], $_REQUEST["to"]);
 			break;
+		case "layer":
+			$layerProperties = self::makeLayerPropertiesFromRequest($post);
+			$layerProperties->layer = $_REQUEST["layerName"];
+			DML::saveLayerProperties($_REQUEST["layerName"], $layerProperties);
+			break;
 		default:
 			throw new Exception(sprintf("No POST handler defined for action %s\n", $action));
 		}
@@ -516,6 +533,32 @@ HTML;
 			}
 		}
 		
+		return $result;
+	}
+
+	/**
+	 * Turn request data into a LayarResponse object
+	 *
+	 * @param array $request
+	 *
+	 * @return LayarResponse
+	 */
+	public static function makeLayerPropertiesFromRequest($request) {
+		$result = new LayarResponse();
+		foreach ($request as $name => $value) {
+			switch($name) {
+			case "showMessage":
+				$result->$name = (string)$value;
+				break;
+			case "refreshInterval":
+			case "refreshDistance":
+				$result->$name = (int)$value;
+				break;
+			case "fullRefresh":
+				$result->$name = (bool)(string)$value;
+				break;
+			}
+		}
 		return $result;
 	}
 
