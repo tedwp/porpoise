@@ -52,6 +52,9 @@ try {
 	case "newPOI":
 		GUI::printMessage("%s", GUI::createNewPOIScreen($_REQUEST["layerName"]));
 		break;
+	case "migrate":
+		GUI::printMessage("%s", GUI::createMigrationScreen());
+		break;
 	default:
 		throw new Exception(sprintf("Invalid action: %s", $_action));
 	}

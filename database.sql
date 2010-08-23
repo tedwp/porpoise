@@ -1,6 +1,6 @@
 -- MySQL dump 10.11
 --
--- Host: localhost    Database: eduroamhotspots
+-- Host: localhost    Database: porpoise
 -- ------------------------------------------------------
 -- Server version	5.0.67-0ubuntu6.1
 
@@ -41,6 +41,24 @@ CREATE TABLE `Action` (
 SET character_set_client = @saved_cs_client;
 
 --
+-- Table structure for table `Layer`
+--
+
+DROP TABLE IF EXISTS `Layer`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `Layer` (
+  `name` varchar(255) default NULL,
+  `refreshInterval` int(11) default NULL,
+  `refreshDistance` int(11) default NULL,
+  `fullRefresh` tinyint(1) default '1',
+  `showMessage` varchar(1024) default NULL,
+  `id` int(11) NOT NULL auto_increment,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Table structure for table `Object`
 --
 
@@ -69,8 +87,8 @@ CREATE TABLE `POI` (
   `id` int(11) NOT NULL,
   `attribution` varchar(255) default NULL,
   `imageURL` varchar(1024) default NULL,
-  `lat` double precision default NULL,
-  `lon` double precision default NULL,
+  `lat` double default NULL,
+  `lon` double default NULL,
   `line2` varchar(255) default NULL,
   `line3` varchar(255) default NULL,
   `line4` varchar(255) default NULL,
@@ -79,6 +97,7 @@ CREATE TABLE `POI` (
   `doNotIndex` tinyint(1) default '0',
   `showSmallBiw` tinyint(1) default '1',
   `showBiwOnClick` tinyint(1) default '1',
+  `layerID` int(11) default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
@@ -108,4 +127,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-08-16  9:20:01
+-- Dump completed on 2010-08-20 13:19:32

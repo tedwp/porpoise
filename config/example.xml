@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<layer>
+
+<refreshInterval/>
+<refreshDistance/>
+<fullRefresh/>
+<responseMessage/>
+<action>
+<contentType/>
+<method/>
+<activityType/>
+<uri/>
+<label/>
+<params/>
+<showActivity/>
+<activityMessage/>
+</action>
+
 <pois>
- 
+
 
 
 
@@ -19,4 +36,7 @@
 <title>example POI</title>
 <type>1</type>
 <showSmallBiw>0</showSmallBiw>
-</poi></pois>
+</poi>
+</pois>
+
+</layer>

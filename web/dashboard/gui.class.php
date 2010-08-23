@@ -396,6 +396,23 @@ HTML;
 	}
 
 	/**
+	 * Create a screen for migrating (copying) layers
+	 *
+	 * @return string
+	 */
+	public static function createMigrationScreen() {
+		$result = "";
+		$layers = DML::getLayers();
+		$layers = array_combine($layers, $layers);
+		$result .= sprintf("<form method=\"POST\" action=\"%s\">\n", $_SERVER["PHP_SELF"]);
+		$result .= sprintf("<input type=\"hidden\" name=\"action\" value=\"migrate\">\n");
+		$result .= sprintf("<p>Copy from %s to %s <button type=\"submit\">Copy</button></p>\n", GUI::createSelect("from", $layers), GUI::createSelect("to", $layers));
+		$result .= sprintf("<p>Warning: copying contents will overwrite any old data in the destination layer</p>\n");
+		$result .= "</form>\n";
+		return $result;
+	}
+
+	/**
 	 * Handle POST
 	 *
 	 * Checks whether there is something in the POST to handle and calls
@@ -428,8 +445,11 @@ HTML;
 			DML::deletePOI($_REQUEST["layerName"], $_REQUEST["poiID"]);
 			self::redirect("layer", array("layerName" => $_REQUEST["layerName"]));
 			break;
+		case "migrate":
+			DML::migrateLayers($_REQUEST["from"], $_REQUEST["to"]);
+			break;
 		default:
-			throw new Exception(sprintf("No post handler defined for action %s\n", $action));
+			throw new Exception(sprintf("No POST handler defined for action %s\n", $action));
 		}
 	}
 
