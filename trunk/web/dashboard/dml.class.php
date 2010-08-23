@@ -35,6 +35,20 @@ class DML {
 	}
 
 	/**
+	 * Get a list of layer names
+	 *
+	 * @return string[]
+	 */
+	public static function getLayers() {
+		$config = self::getConfiguration();
+		$result = array();
+		foreach ($config->layerDefinitions as $layerDefinition) {
+			$result[] = $layerDefinition->name;
+		}
+		return $result;
+	}
+
+	/**
 	 * Get POIs for a configured layer
 	 *
 	 * @param string $layerName
@@ -164,5 +178,24 @@ class DML {
 			throw new Exception(sprintf("Unknown layer: %s\n", $layerName));
 		}
 		return self::getPOIConnectorFromDefinition($layerDefinition);
+	}
+
+	/**
+	 * Migrate data from one layer to another
+	 *
+	 * @param string $from
+	 * @param string $to
+	 *
+	 * @return void
+	 *
+	 * @throws Exception if the layer does not exist or data is invalid
+	 */
+	public static function migrateLayers($from, $to) {
+		$fromPOIConnector = self::getPOIConnector($from);
+		$toPOIConnector = self::getPOIConnector($to);
+
+		$layerContents = $fromPOIConnector->getLayarResponse();
+		$toPOIConnector->storePOIs($layerContents->hotspots, "replace");
+		$toPOIConnector->storeLayerProperties($layerContents);
 	}
 }

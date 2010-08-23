@@ -55,7 +55,7 @@ abstract class POIConnector {
 	 *
 	 * @throws Exception
 	 */
-	public function getLayarResponse(Filter $filter) {
+	public function getLayarResponse(Filter $filter = NULL) {
 		$result = new LayarResponse();
 		$result->hotspots = $this->getPOIs($filter);
 		return $result;
@@ -70,7 +70,26 @@ abstract class POIConnector {
 	 * @param string $mode "replace" to replace the current set, "update" to update current set (default)
 	 * @return void
 	 */
-	public abstract function storePOIs(array $pois, $mode = "update");
+	public function storePOIs(array $pois, $mode = "update") {
+		throw new Exception("This method has not been implemented");
+	}
+
+	/**
+	 * Save layer properties
+	 *
+	 * Note: uses LayarResponse as transport for properties but will not
+	 * save the contents of $properties->hotspots. Use storePOIs for that
+	 *
+	 * @param LayarResponse $properties
+	 * @param bool $asString
+	 *
+	 * @return mixed FALSE on failure, XML string or TRUE on success
+	 *
+	 * @throws Exception
+	 */
+	public function storeLayerProperties(LayarResponse $properties) {
+		throw new Exception("This method has not been implemented");
+	}
 
 	/**
 	 * Delete a POI

@@ -34,7 +34,7 @@ class LayarResponse {
 	/** @var bool Do a full refresh or an update */
 	public $fullRefresh = TRUE;
 	/** @var string Response message to display */
-	public $responseMessage = NULL;
+	public $showMessage = NULL;
 	/** @var Action[] */
 	public $actions = array();
 	/** @var bool */

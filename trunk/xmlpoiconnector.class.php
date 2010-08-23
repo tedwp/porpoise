@@ -21,11 +21,13 @@
  * @package PorPOISe
  */
 class XMLPOIConnector extends POIConnector {
-	const EMPTY_DOCUMENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<pois/>";
+	const EMPTY_DOCUMENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<layer><pois/></layer>";
 	/** @var string */
 	protected $source;
 	/** @var string */
 	protected $styleSheetPath = "";
+	/** @var SimpleXMLElement Loaded XML for the layer; do not reference directly but use getSimpleXMLFromSource() */
+	protected $simpleXMLElement;
 
 	/**
 	 * Constructor
@@ -49,6 +51,67 @@ class XMLPOIConnector extends POIConnector {
 		$this->styleSheetPath = $styleSheetPath;
 	}
 
+	protected function getSimpleXMLFromSource() {
+		if (empty($this->simpleXML)) {
+			if(!empty($this->styleSheetPath)) {
+				$this->simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
+			} else {
+				$this->simpleXML = new SimpleXMLElement($this->source, 0, TRUE);
+			}
+			if (empty($this->simpleXML)) {
+				throw new Exception("Failed to load data");
+			}
+		}
+		return $this->simpleXML;
+	}
+
+	/**
+	 * Return a Layar response
+	 *
+	 * @param Filter $filter
+	 *
+	 * @return LayarResponse
+	 */
+	public function getLayarResponse(Filter $filter = NULL) {
+		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
+
+		$simpleXML = $this->getSimpleXMLFromSource();
+
+		$result = new LayarResponse();
+
+		$layerNodes = $simpleXML->xpath("/layer");
+		if (count($layerNodes) > 0) {	// when 0, this is an old style PorPOISe XML file
+			$layerNode = $layerNodes[0];	// always pick first <layer> element, multiples are ignored
+			foreach($layerNode->children() as $childNode) {
+				$name = $childNode->getName();
+				switch($name) {
+				case "refreshInterval":
+				case "refreshDistance":
+					$result->$name = (int)$childNode;
+					break;
+				case "fullRefresh":
+					$result->$name = (bool)((string)$childNode);
+					break;
+				case "showMessage":
+					$result->$name = (string)$childNode;
+					break;
+				case "action":
+					$result->actions[] = new Action($childNode);
+					break;
+				default:
+					// not relevant
+					break;
+				}
+			}
+		}
+
+		$result->hotspots = $this->getPOIs($filter);
+
+		libxml_use_internal_errors($libxmlErrorHandlingState);
+
+		return $result;
+	}		
+
 	/**
 	 * Provides an XPath query for finding POIs in the source file.
 	 *
@@ -60,7 +123,7 @@ class XMLPOIConnector extends POIConnector {
 	 * @return string
 	 */
 	public function buildQuery(Filter $filter = NULL) {
-		return "poi";
+		return "//pois/poi";
 	}
 
 	/**
@@ -83,14 +146,7 @@ class XMLPOIConnector extends POIConnector {
 		$dlat = GeoUtil::getLatitudinalDistance(($radius + $accuracy) * 1.25, $lat);
 		$dlon = GeoUtil::getLongitudinalDistance(($radius + $accuracy) * 1.25, $lat);
 
-		if(!empty($this->styleSheetPath)) {
-			$simpleXML = new SimpleXMLElement($this->transformXML(), 0, FALSE);
-		} else {
-			$simpleXML = new SimpleXMLElement($this->source, 0, TRUE);
-		}
-		if (empty($simpleXML)) {
-			throw new Exception("Failed to load data");
-		}
+		$simpleXML = $this->getSimpleXMLFromSource();
 
 		$result = array();
 		$requestedPOI = NULL;
@@ -200,10 +256,7 @@ class XMLPOIConnector extends POIConnector {
 
 		// initialize result XML
 		if ($mode == "update") {
-			$simpleXML = new SimpleXMLElement($this->source, 0, TRUE);
-			if (empty($simpleXML)) {
-				throw new Exception("Failed to load data file");
-			}
+			$simpleXML = $this->getSimpleXMLFromSource();
 			// look for highest id in current set
 			$idNodes = $simpleXML->xpath("//poi/id");
 			foreach ($idNodes as $idNode) {
@@ -217,6 +270,11 @@ class XMLPOIConnector extends POIConnector {
 			// $maxID stays at 0 for now
 		}
 		$domXML = dom_import_simplexml($simpleXML);
+		$simpleXMLPOIsElements = $simpleXML->xpath("//pois");
+		if (count($simpleXMLPOIsElements) == 0) {
+			throw new Exception("XML file is corrupt");
+		}
+		$domXMLPOIsElement = dom_import_simplexml($simpleXMLPOIsElements[0]);
 		// look for high id in new set, see if it's higher than $maxID
 		foreach ($pois as $poi) {
 			if ($poi->id > $maxID) {
@@ -241,9 +299,9 @@ class XMLPOIConnector extends POIConnector {
 			$simpleXMLElement = self::poiToSimpleXMLElement($poi);
 			$domElement = $domXML->ownerDocument->importNode(dom_import_simplexml($simpleXMLElement), TRUE);
 			if (empty($oldSimpleXMLElements)) {
-				$domXML->appendChild($domElement);
+				$domXMLPOIsElement->appendChild($domElement);
 			} else {
-				$domXML->replaceChild($domElement, dom_import_simplexml($oldSimpleXMLElements[0]));
+				$domXMLPOIsElement->replaceChild($domElement, dom_import_simplexml($oldSimpleXMLElements[0]));
 			}				
 		}
 
@@ -287,6 +345,38 @@ class XMLPOIConnector extends POIConnector {
 		$dom->save($this->source);
 
 		libxml_use_internal_errors($libxmlErrorHandlingState);
+	}
+
+	/**
+	 * Save layer properties
+	 *
+	 * Note: uses LayarResponse as transport for properties but will not
+	 * save the contents of $properties->hotspots. Use storePOIs for that
+	 *
+	 * @param LayarResponse $properties
+	 * @param bool $asString
+	 *
+	 * @return mixed FALSE on failure, XML string or TRUE on success
+	 *
+	 * @throws Exception
+	 */
+	public function storeLayerProperties(LayarResponse $response, $asString = FALSE) {
+		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
+
+		$simpleXML = $this->getSimpleXMLFromSource();
+
+		$relevantFields = array("refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
+		foreach ($relevantFields as $fieldName) {
+			$simpleXML->$fieldName = $response->$fieldName;
+		}
+
+		libxml_use_internal_errors($libxmlErrorHandlingState);
+
+		if ($asString) {
+			return $simpleXML->asXML();
+		} else {
+			return $simpleXML->asXML($this->source);
+		}
 	}
 
 	/**
