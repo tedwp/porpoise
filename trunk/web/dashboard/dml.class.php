@@ -122,6 +122,18 @@ class DML {
 	}
 
 	/**
+	 * Save a layer's properties
+	 *
+	 * @param string $layerName
+	 * @param LayarResponse $properties
+	 *
+	 * @return void
+	 */
+	public static function saveLayerProperties($layerName, LayarResponse $properties) {
+		self::getPOIConnector($layerName)->storeLayerProperties($properties);
+	}
+
+	/**
 	 * Delete a POI from the data store
 	 *
 	 * @param string $layerName
@@ -161,6 +173,22 @@ class DML {
 			}
 		}
 		return NULL;
+	}
+
+	/**
+	 * Get a layer's properties
+	 *
+	 * Does NOT return POIs, only the layer's static properties
+	 *
+	 * @param string $layerName
+	 *
+	 * @return LayarResponse
+	 */
+	public static function getLayerProperties($layerName) {
+		$connector = self::getPOIConnector($layerName);
+		$result = $connector->getLayarResponse();
+		$result->actions = array();	// this method should not be used to get hotspots. removing them here guarantees no other code relies on it
+		return $result;
 	}
 
 	/**
