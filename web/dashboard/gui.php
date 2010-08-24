@@ -41,7 +41,12 @@ case "newAction":
 	if (!is_numeric($index)) {
 		badRequest();
 	}
-	printf("%s", GUI::createActionSubtable($index, new POIAction()));
+  if (empty($_REQUEST["layerAction"])) {
+    $layerAction = FALSE;
+  } else {
+    $layerAction = $_REQUEST["layerAction"];
+  }
+	printf("%s", GUI::createActionSubtable($index, new POIAction(), $layerAction));
 	exit();
 default:
 	badRequest();

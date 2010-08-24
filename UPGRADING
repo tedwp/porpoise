@@ -21,8 +21,14 @@
   "config/" directory to a place of your liking. If PorPOISe is in a
   web-accessible directory this enhances security and, in any case, makes for
   easier upgrading
+- if you are using the SQLPOIConnector you will want to upgrade to the new
+  database schema. Create a new, empty database and run the database.sql
+  script to create a new database. Then, use a MySQL tool or the copying
+  functionality in the PorPOISe Dashboard to copy from the old database to
+  the new database.
 
 N.B. as of release 1.0 the FlatPOIConnector is deprecated and will no longer be
-supported. If you're using the FlatPOIConnector for your layers and need help
-converting to XML or database, let us know in the PorPOISe Google Group
-http://groups.google.com/group/porpoise
+supported. If you're using the FlatPOIConnector for your layers, you can use
+the new copying functionality in the dashboard to copy your data to a new layer
+that uses a different POIConnector such as XMLPOIConnector.
+

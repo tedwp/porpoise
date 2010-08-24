@@ -364,11 +364,23 @@ class XMLPOIConnector extends POIConnector {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
 
 		$simpleXML = $this->getSimpleXMLFromSource();
+    unset($simpleXML->action);
 
 		$relevantFields = array("refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
 		foreach ($relevantFields as $fieldName) {
 			$simpleXML->$fieldName = $response->$fieldName;
 		}
+    foreach ($response->actions as $action) {
+      if (empty($simpleXML->action)) {
+        $i = 0;
+      } else {
+        $i = count($simpleXML->action);
+      }
+      $actionFields = array("label", "uri", "method", "contentType", "activityType", "params", "showActivity", "activityMessage");
+      foreach ($actionFields as $actionField) {
+        $simpleXML->action[$i]->$actionField = $action->$actionField;
+      }
+    }
 
 		libxml_use_internal_errors($libxmlErrorHandlingState);
 

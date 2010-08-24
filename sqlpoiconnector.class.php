@@ -330,6 +330,23 @@ class SQLPOIConnector extends POIConnector {
 				$stmt->bindValue(":" . $layerField, $response->$layerField);
 			}
 			$stmt->execute();
+
+      // store actions
+      //
+      // remove old actions
+      $sql = "DELETE FROM Action WHERE poiId IS NULL";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute();
+      // insert new actions
+      foreach ($response->actions as $action) {
+        $actionFields = array("label", "uri", "method", "contentType", "activityType", "params", "showActivity", "activityMessage");
+        $sql = "INSERT INTO Action (" . implode(",", $actionFields) . ",poiId) VALUES (:" . implode(",:", $actionFields) . ",NULL)";
+        $stmt = $pdo->prepare($sql);
+        foreach ($actionFields as $actionField) {
+          $stmt->bindValue(":" . $actionField, $action->$actionField);
+        }
+        $stmt->execute();
+      }
 		} catch (PDOException $e) {
 			throw new Exception("Database error: " . $e->getMessage());
 		}

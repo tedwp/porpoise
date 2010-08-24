@@ -28,9 +28,9 @@ class LayarResponse {
 	/** @var int Radius containing the returned POI set */
 	public $radius = 0;
 	/** @var int Refresh interval in seconds */
-	public $refreshInterval = NULL;
+	public $refreshInterval = 300;
 	/** @var int Refresh distance in meters */
-	public $refreshDistance = NULL;
+	public $refreshDistance = 100;
 	/** @var bool Do a full refresh or an update */
 	public $fullRefresh = TRUE;
 	/** @var string Response message to display */

@@ -39,7 +39,7 @@ CREATE TABLE `Action` (
   PRIMARY KEY  (`id`),
   KEY `poiId` (`poiId`),
   CONSTRAINT `Action_ibfk_1` FOREIGN KEY (`poiId`) REFERENCES `POI` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -51,13 +51,13 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8;
 CREATE TABLE `Layer` (
   `layer` varchar(255) default NULL,
-  `refreshInterval` int(11) default NULL,
-  `refreshDistance` int(11) default NULL,
+  `refreshInterval` int(11) default '300',
+  `refreshDistance` int(11) default '100',
   `fullRefresh` tinyint(1) default '1',
   `showMessage` varchar(1024) default NULL,
   `id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -104,7 +104,7 @@ CREATE TABLE `POI` (
   `alt` int(11) default NULL,
   `relativeAlt` int(11) default NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=953803 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=971468 DEFAULT CHARSET=latin1;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -132,4 +132,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2010-08-23 18:26:26
+-- Dump completed on 2010-08-24 19:15:29
