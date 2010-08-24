@@ -4,10 +4,12 @@
   and some tweaks and enhancements
 
 Details:
+- added layer copying functionality to Dashboard. You can use this to migrate
+  between data formats or create a copy for testing
 - added Google Maps widget to Dashboard to help pinpoint POIs
 - added getLayarResponse hook to POIConnector abstract class. This allows you
-  to override repsonse defaults, i.e. change refresh interval or set a layer
-  action
+  to override response defaults, i.e. change refresh interval or set layer
+  actions
 - added support for new request parameters:
   - requestedPoiId
   - version
@@ -53,7 +55,7 @@ Details:
   and deferred oAuth initialization
 - added caching to layer server so subsequent page requests are served from
   cache rather than calculated all over again
-- added webApiPoiconnector for making authenitcated API calls to 3rd party
+- added webApiPoiconnector for making authenticated API calls to 3rd party
   services for POI requests
 - added web-app subclass settings to PorPOISe config
 

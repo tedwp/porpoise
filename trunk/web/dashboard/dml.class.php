@@ -187,7 +187,7 @@ class DML {
 	public static function getLayerProperties($layerName) {
 		$connector = self::getPOIConnector($layerName);
 		$result = $connector->getLayarResponse();
-		$result->actions = array();	// this method should not be used to get hotspots. removing them here guarantees no other code relies on it
+		$result->hotspots = array();	// this method should not be used to get hotspots. removing them here guarantees no other code relies on it
 		return $result;
 	}
 

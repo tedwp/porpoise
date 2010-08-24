@@ -53,8 +53,8 @@ class LayarPOIServer {
 		"showBiwOnClick" => TRUE
 	);
 	protected $optionalResponseFieldsDefaults = array(
-		"refreshInterval" => NULL,
-		"refreshDistance" => NULL,
+		"refreshInterval" => 300,
+		"refreshDistance" => 100,
 		"fullRefresh" => TRUE,
 		"actions" => array(),
 		"responseMessage" => NULL,
@@ -98,18 +98,14 @@ class LayarPOIServer {
 			
 			$layer = $this->layers[$filter->layerName];
 			$layer->determineNearbyPOIs($filter);
-			$numPois = count($layer->getLayarResponse()->hotspots);
+			
+			$response = $layer->getLayarResponse();
+			$response->layer = $filter->layerName;
+			$numPois = count($response->hotspots);
 			if ($loghandler) {
 				$loghandler->log($filter, array('numpois' => $numPois));
 			}
-			if ($numPois == 0) {
-				$this->sendErrorResponse(self::ERROR_CODE_NO_POIS);
-				return;
-			}
 	
-			//$this->sendResponse($pois, $morePages, $nextPageKey, $radius);
-			$response = $layer->getLayarResponse();
-			$response->layer = $filter->layerName;
 			$this->sendLayarResponse($response);
 		} catch (Exception $e) {
 			if ($loghandler) {
@@ -130,6 +126,10 @@ class LayarPOIServer {
 	 * @return void
 	 */
 	protected function sendLayarResponse(LayarResponse $response) {
+		if (count($response->hotspots) == 0) {
+			$response->errorCode = self::ERROR_CODE_NO_POIS;
+			$response->errorString = self::$ERROR_MESSAGES[$response->errorCode];
+		}
 		$aResponse = array();
 		foreach ($response as $name => $value) {
 			switch($name) {
@@ -232,7 +232,7 @@ class LayarPOIServer {
 		$response["morePages"] = FALSE;
 
 		/* Set the proper content type */
-		header("Content-Type: text/javascript");
+		header("Content-Type: application/json");
 
 		printf("%s", json_encode($response));
 	}

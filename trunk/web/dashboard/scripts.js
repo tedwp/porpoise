@@ -6,12 +6,11 @@
  */
 
 var GUI = {
-	addPOIAction: function (source) {
+	addAction: function (source, actionTables, layerAction) {
 		var maxIndex = 0;
 
-		var poiActionTables = document.body.select("table.poi table.action");
-		for (var i = 0; i < poiActionTables.length; i++) {
-			var inputs = poiActionTables[i].select("input");
+		for (var i = 0; i < actionTables.length; i++) {
+			var inputs = actionTables[i].select("input");
 			if (inputs.length == 0) {
 				/* weird, page must be corrupt */
 				return;
@@ -32,67 +31,38 @@ var GUI = {
 
 		var newRow = document.createElement("tr");
 		var td = document.createElement("td");
-		td.insert("Action<br><button type=\"button\" onclick=\"GUI.removePOIAction(" + newIndex + ")\">Remove</button>");
+		td.insert("Action<br><button type=\"button\" onclick=\"GUI.remove" + (layerAction ? "Layer" : "POI") + "Action(" + newIndex + ")\">Remove</button>");
 		newRow.appendChild(td);
 		td = document.createElement("td");
 		newRow.appendChild(td);
-		new Ajax.Updater ({ success: td }, "gui.php", { parameters: { action: "newAction", index: newIndex }, insertion: "bottom" } );
-		/*var actionTable = document.createElement("table");
-		td.appendChild(actionTable);
-		actionTable.addClassName("action");
-		for (var i = 0; i < 4; i++) {
-			var tr = document.createElement("tr");
-			var labelTd = document.createElement("td");
-			var valueTd = document.createElement("td");
-			if (i == 0) {
-				labelTd.textContent = "Label";
-				var input = document.createElement("input");
-				input.type = "text";
-				input.name = "actions[" + newIndex + "][label]";
-				valueTd.appendChild(input);
-			} else if (i == 1) {
-				labelTd.textContent = "URI";
-				var input = document.createElement("input");
-				input.type = "text";
-				input.name = "actions[" + newIndex + "][uri]";
-				valueTd.appendChild(input);
-			} else if (i == 2) {
-				labelTd.textContent = "Auto-trigger range";
-				var input = document.createElement("input");
-				input.type = "text";
-				input.name = "actions[" + newIndex + "][autoTriggerRange]";
-				input.size = 2;
-				valueTd.appendChild(input);
-			} else if (i == 3) {
-				labelTd.textContent = "Auto-trigger only";
-				var select = document.createElement("select");
-				select.name = "actions[" + newIndex + "][autoTriggerOnly]";
-				var option = document.createElement("option");
-				option.textContent = "Yes";
-				option.value = 1;
-				select.appendChild(option);
-				option = document.createElement("option");
-				option.textContent = "No";
-				option.value = 0;
-				option.selected = "selected";
-				select.appendChild(option);
-				valueTd.appendChild(select);
-			} else {
-				// 'scuse me? 
-				continue;
-			}
-			tr.appendChild(labelTd);
-			tr.appendChild(valueTd);
-			actionTable.appendChild(tr);
-		}*/
+		new Ajax.Updater ({ success: td }, "gui.php", { parameters: { action: "newAction", index: newIndex, layerAction: layerAction }, insertion: "bottom" } );
 		var sourceRow = source.up("tr");
 		sourceRow.insert({ before: newRow });
 	}
 
+	, addPOIAction: function(source) {
+		var poiActionTables = document.body.select("table.poi table.action");
+		this.addAction(source, poiActionTables, false);
+	}	
+
+	, addLayerAction: function(source) {
+		var layerActionTables = document.body.select("table.layer table.action");
+		this.addAction(source, layerActionTables, true);
+	}	
+
 	, removePOIAction: function(indexToRemove) {
 		var poiActionTables = document.body.select("table.poi table.action");
-		for (var i = 0; i < poiActionTables.length; i++) {
-			var inputs = poiActionTables[i].select("input");
+		this.removeAction(indexToRemove, poiActionTables);
+	}
+
+	, removeLayerAction: function(indexToRemove) {
+		var layerActionTables = document.body.select("table.layer table.action");
+		this.removeAction(indexToRemove, layerActionTables);
+	}
+
+	, removeAction: function(indexToRemove, actionTables) {
+		for (var i = 0; i < actionTables.length; i++) {
+			var inputs = actionTables[i].select("input");
 			if (inputs.length == 0) {
 				/* weird, page must be corrupt */
 				return;
@@ -105,7 +75,7 @@ var GUI = {
 			}
 			var index = parseInt(indexWithBrackets[0].substr(1, indexWithBrackets[0].length - 2));
 			if (index == indexToRemove) {
-				poiActionTables[i].up("tr").remove();
+				actionTables[i].up("tr").remove();
 				return;
 			}
 		}
@@ -207,6 +177,9 @@ function initialize(){
                         mapDiv.innerHTML="ok";
                                 mapPopin.appendChild(mapDiv);
                 porpoiselnginputs=document.getElementsByName('lon');
+								if (porpoiselnginputs.length == 0) {
+									return;
+								}
                 porpoiselnginputs[0].parentNode.appendChild(mapPopinLink);
                 porpoiselnginputs[0].parentNode.appendChild(mapPopin);
         //////////////////////////////////////////////////

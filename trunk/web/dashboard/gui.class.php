@@ -222,11 +222,15 @@ HTML;
 		$result .= sprintf("<form action=\"?action=layer&layerName=%s\" method=\"POST\">\n", $layerName);
 
 		$layerProperties = DML::getLayerProperties($layerName);
-		$result .= sprintf("<table>\n");
+		$result .= sprintf("<table class=\"layer\">\n");
 		$result .= sprintf("<tr><td>Response message</td><td><input type=\"text\" name=\"showMessage\" value=\"%s\"></td></tr>\n", $layerProperties->showMessage);
 		$result .= sprintf("<tr><td>Refresh interval</td><td><input type=\"text\" name=\"refreshInterval\" value=\"%s\"></td></tr>\n", $layerProperties->refreshInterval);
 		$result .= sprintf("<tr><td>Refresh distance</td><td><input type=\"text\" name=\"refreshDistance\" value=\"%s\"></td></tr>\n", $layerProperties->refreshDistance);
 		$result .= sprintf("<tr><td>Full refresh</td><td>%s</td></tr>\n", self::createCheckbox("fullRefresh", $layerProperties->fullRefresh));
+		foreach ($layerProperties->actions as $key => $action) {
+			$result .= sprintf("<tr><td>Action<br><button type=\"button\" onclick=\"GUI.removeLayerAction(%s)\">Remove</button></td><td>%s</td></tr>\n", $key, self::createActionSubtable($key, $action, TRUE));
+		}
+		$result .= sprintf("<tr><td colspan=\"2\"><button type=\"button\" onclick=\"GUI.addLayerAction(this)\">New action</button></td></tr>\n");
 		$result .= sprintf("<caption><button type=\"submit\">Save</button></caption>\n");
 		$result .= sprintf("</table>\n");
 		$result .= sprintf("</form>\n");
@@ -319,21 +323,26 @@ HTML;
 	 *
 	 * @param string $index Index of the action in the actions[] array
 	 * @param POIAction $action The action
+	 * @param bool $layerAction Create a layer action form instead of a POI action form
 	 *
 	 * @return string
 	 */
-	public static function createActionSubtable($index, POIAction $action) {
+	public static function createActionSubtable($index, Action $action, $layerAction = FALSE) {
 		$result = "";
 		$result .= "<table class=\"action\">\n";
 		$result .= sprintf("<tr><td>Label</td><td><input type=\"text\" name=\"actions[%s][label]\" value=\"%s\"></td></tr>\n", $index, $action->label);
 		$result .= sprintf("<tr><td>URI</td><td><input type=\"text\" name=\"actions[%s][uri]\" value=\"%s\"></td></tr>\n", $index, $action->uri);
-		$result .= sprintf("<tr><td>Auto-trigger range</td><td><input type=\"text\" name=\"actions[%s][autoTriggerRange]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->autoTriggerRange);
-		$result .= sprintf("<tr><td>Auto-trigger only</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][autoTriggerOnly]", $index), $action->autoTriggerOnly));
+		if (!$layerAction) {
+			$result .= sprintf("<tr><td>Auto-trigger range</td><td><input type=\"text\" name=\"actions[%s][autoTriggerRange]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->autoTriggerRange);
+			$result .= sprintf("<tr><td>Auto-trigger only</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][autoTriggerOnly]", $index), $action->autoTriggerOnly));
+		}
 		$result .= sprintf("<tr><td>Content type</td><td><input type=\"text\" name=\"actions[%s][contentType]\" value=\"%s\">\n", $index, $action->contentType);
 		$result .= sprintf("<tr><td>Method</td><td>%s</td></tr>\n", self::createSelect(sprintf("actions[%s][method]", $index), array("GET" => "GET", "POST" => "POST"), $action->method));
 		$result .= sprintf("<tr><td>Activity type</td><td><input type=\"text\" name=\"actions[%s][activityType]\" value=\"%s\" size=\"2\"></td></tr>\n", $index, $action->activityType);
 		$result .= sprintf("<tr><td>Parameters</td><td><input type=\"text\" name=\"actions[%s][params]\" value=\"%s\"></td></tr>\n", $index, $action->params); /** @todo make this something nicer or at least provide instructions */
-		$result .= sprintf("<tr><td>Close BIW on action</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][closeBiw]", $index), $action->closeBiw));
+		if (!$layerAction) {
+			$result .= sprintf("<tr><td>Close BIW on action</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][closeBiw]", $index), $action->closeBiw));
+		}
 		$result .= sprintf("<tr><td>Show activity indication</td><td>%s</td></tr>\n", self::createCheckbox(sprintf("actions[%s][showActivity]", $index), $action->showActivity));
 		$result .= sprintf("<tr><td>Activity message</td><td><input type=\"text\" name=\"actions[%s][activityMessage]\" value=\"%s\"></td></tr>\n", $index, $action->activityMessage);
 
@@ -556,6 +565,11 @@ HTML;
 				break;
 			case "fullRefresh":
 				$result->$name = (bool)(string)$value;
+				break;
+			case "actions":
+				foreach ($value as $action) {
+					$result->actions[] = new Action($action);
+				}
 				break;
 			}
 		}

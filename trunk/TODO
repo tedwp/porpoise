@@ -1,20 +1,8 @@
 scratch sheet for ToDo's
 
-1.0beta2 (release candidate)
+1.0
 / implement bounding boxing and test performance (and function)
  \-> don't forget wraparound at (-)180 degrees
-+ update db schema for layer action
-+ write reading logic for whole layer action for xml connector
-+ write reading logic for whole layer action for sql connector
-+ write writing logic for whole layer action for xml connector
-+ write writing logic for whole layer action for sql connector
-+ add whole layer action to dashboard
-+ write converter for FlatPOIConnector
-+ add extra POI/Action parameters to POIConnectors and database schema
-+ add extra POI/Action parameters to dashboard
-- write database upgrading script
-- document changes in directory layout/write upgrading guide
-- test whole layer action in dashboard with XMLPOIConnector
 
 1.1
 - multiple layers in one database
