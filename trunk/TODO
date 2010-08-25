@@ -7,3 +7,6 @@ scratch sheet for ToDo's
 1.1
 - multiple layers in one database
   - POIConnector::getLayerProperties() method
+- centralize forced casting logic
+  - allow NULL values for (certain?) integers
+- centralize/refactor default values
