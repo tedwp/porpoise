@@ -3,6 +3,7 @@ scratch sheet for ToDo's
 1.0
 / implement bounding boxing and test performance (and function)
  \-> don't forget wraparound at (-)180 degrees
+- fix "params" in Dashboard
 
 1.1
 - multiple layers in one database

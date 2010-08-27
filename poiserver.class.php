@@ -66,7 +66,7 @@ class LayarPOIServer {
 		"contentType" => NULL,
 		"method" => "GET",
 		"activityType" => NULL,
-		"params" => NULL,
+		"params" => array(),
 		"closeBiw" => FALSE,
 		"showActivity" => TRUE,
 		"activityMessage" => NULL

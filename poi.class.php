@@ -80,8 +80,8 @@ class Action extends Arrayable {
 	public $method = "GET";
 	/** @var int Activity type. Possible types are currently undocumented */
 	public $activityType = NULL;
-	/** @var string Which parameters to include in the call, comma-separated */
-	public $params = NULL;
+	/** @var string[] Which parameters to include in the call */
+	public $params = array();
 	/** @var bool Close the BIW after the action has finished */
 	public $closeBiw = FALSE;
 	/** @var bool Show activity indicator while action completes */
@@ -121,6 +121,12 @@ class Action extends Arrayable {
 					case "showActivity":
 						$this->$field = (bool)$source[$field];
 						break;
+					case "params":
+						$value = (string)$source[$field];
+						if (!empty($value)) {
+							$this->$field = explode(",", $value);
+						}
+						break;
 					default:
 						$this->$field = (string)$source[$field];
 						break;
@@ -139,6 +145,12 @@ class Action extends Arrayable {
 					case "closeBiw":
 					case "showActivity":
 						$this->$field = (bool)(string)$source->$field;
+						break;
+					case "params":
+						$value = (string)$source->$field;
+						if (!empty($value)) {
+							$this->$field = explode(",", $value);
+						}
 						break;
 					default:
 						$this->$field = (string)$source->$field;
