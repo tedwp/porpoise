@@ -343,7 +343,11 @@ class SQLPOIConnector extends POIConnector {
         $sql = "INSERT INTO Action (" . implode(",", $actionFields) . ",poiId) VALUES (:" . implode(",:", $actionFields) . ",NULL)";
         $stmt = $pdo->prepare($sql);
         foreach ($actionFields as $actionField) {
-          $stmt->bindValue(":" . $actionField, $action->$actionField);
+					if ($actionField == "params") {
+						$stmt->bindValue(":" . $actionField, implode(",", $action->$actionField));
+					} else {
+						$stmt->bindValue(":" . $actionField, $action->$actionField);
+					}
         }
         $stmt->execute();
       }

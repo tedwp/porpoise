@@ -378,7 +378,11 @@ class XMLPOIConnector extends POIConnector {
       }
       $actionFields = array("label", "uri", "method", "contentType", "activityType", "params", "showActivity", "activityMessage");
       foreach ($actionFields as $actionField) {
-        $simpleXML->action[$i]->$actionField = str_replace("&", "&amp;", $action->$actionField);
+				if ($actionField == "params") {
+					$simpleXML->action[$i]->$actionField = implode(",", $action->$actionField);
+				} else {
+	        $simpleXML->action[$i]->$actionField = str_replace("&", "&amp;", $action->$actionField);
+				}
       }
     }
 
