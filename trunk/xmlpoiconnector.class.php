@@ -368,7 +368,7 @@ class XMLPOIConnector extends POIConnector {
 
 		$relevantFields = array("refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
 		foreach ($relevantFields as $fieldName) {
-			$simpleXML->$fieldName = str_replace("&", "&amp;", $response->$fieldName);
+			$simpleXML->$fieldName = $response->$fieldName;
 		}
     foreach ($response->actions as $action) {
       if (empty($simpleXML->action)) {
@@ -381,7 +381,7 @@ class XMLPOIConnector extends POIConnector {
 				if ($actionField == "params") {
 					$simpleXML->action[$i]->$actionField = implode(",", $action->$actionField);
 				} else {
-	        $simpleXML->action[$i]->$actionField = str_replace("&", "&amp;", $action->$actionField);
+	        $simpleXML->action[$i]->$actionField = $action->$actionField;
 				}
       }
     }
