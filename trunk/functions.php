@@ -62,3 +62,44 @@ function objectSort($field, array $ar, $descending = FALSE) {
 	}
 	return $result;
 }
+
+/**
+ * Undo magic quotes if they have been enabled
+ *
+ * @return void
+ */
+function undo_magic_quotes_gpc() {
+	if (!function_exists("get_magic_quotes_gpc")) {
+		// magic_quotes_gpc is deprecated in PHP 5.3, this function may disappear in the future
+		// so check for its existence
+		return;
+	}
+	if (get_magic_quotes_gpc()) {
+		/*foreach ($_REQUEST as $key => $value) $_REQUEST[$key] = stripslashes($value);
+		foreach ($_GET as $key => $value) $_GET[$key] = stripslashes($value);
+		foreach ($_POST as $key => $value) $_POST[$key] = stripslashes($value);
+		foreach ($_COOKIE as $key => $value) $_COOKIE[$key] = stripslashes($value);*/
+		stripslashes_array($_REQUEST);
+		stripslashes_array($_GET);
+		stripslashes_array($_POST);
+		stripslashes_array($_COOKIE);
+	}
+}
+
+/**
+ * Strip slashes from elements in an array (recursively if necessary)
+ *
+ * Alters the argument
+ *
+ * @param &$ar
+ * @return void
+ */
+function stripslashes_array(&$ar) {
+	foreach ($ar as $key => $value) {
+		if (is_array($value)) {
+			stripslashes_array($ar[$key]);
+		} else {
+			$ar[$key] = stripslashes($value);
+		}
+	}
+}
