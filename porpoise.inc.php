@@ -51,6 +51,8 @@ require_once("httprequest.class.php");
 require_once("user.class.php");
 
 
+/* KILL magic quotes */
+undo_magic_quotes_gpc();
 
 /* change to config directory for remainder of execution */
 chdir(PORPOISE_CONFIG_PATH);
