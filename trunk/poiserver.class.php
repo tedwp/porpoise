@@ -357,7 +357,7 @@ class LayarPOIServer {
 			$result->userAgent = $_SERVER['HTTP_USER_AGENT'];
 		}
 
-		if (!empty($_COOKIE[$_REQUEST["layerName"] . "Id"])) {
+		if (!empty($_REQUEST["layerName"]) && !empty($_COOKIE[$_REQUEST["layerName"] . "Id"])) {
 			$result->porpoiseUID = $_COOKIE[$_REQUEST["layerName"] . "Id"];
 		}
 
