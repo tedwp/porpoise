@@ -449,12 +449,12 @@ class XMLPOIConnector extends POIConnector {
 			} else if ($key == "transform") {
 				$transformElement = $poiElement->addChild("transform");
 				foreach(array("rel", "angle", "scale") as $elementName) {
-					$transformElement->addChild($elementName, str_replace("&", "&amp;", $poi->$elementName));
+					$transformElement->addChild($elementName, str_replace("&", "&amp;", $poi->transform->$elementName));
 				}
 			} else if ($key == "object") {
 				$objectElement = $poiElement->addChild("object");
 				foreach(array("baseURL", "full", "reduced", "icon", "size") as $elementName) {
-					$objectElement->addChild($elementName, str_replace("&", "&amp;", $poi->$elementName));
+					$objectElement->addChild($elementName, str_replace("&", "&amp;", $poi->object->$elementName));
 				}
 			} else {
 				$poiElement->addChild($key, str_replace("&", "&amp;", $value));
