@@ -199,25 +199,24 @@ class SQLPOIConnector extends POIConnector {
 			$stmt->bindValue(":layerName", $filter->layerName);
 		}
 		$stmt->execute();
-		if (!($row = $stmt->fetch())) {
-			throw new Exception("No matching layer found");
-		}
-
-		foreach($row as $name => $value) {
-			switch($name) {
-			case "refreshInterval":
-			case "refreshDistance":
-				$result->$name = (int)$value;
-				break;
-			case "fullRefresh":
-				$result->$name = (bool)((string)$value);
-				break;
-			case "showMessage":
-				$result->$name = (string)$value;
-				break;
-			default:
-				// not relevant
-				break;
+		if ($row = $stmt->fetch()) {
+			// no entry means use default
+			foreach($row as $name => $value) {
+				switch($name) {
+				case "refreshInterval":
+				case "refreshDistance":
+					$result->$name = (int)$value;
+					break;
+				case "fullRefresh":
+					$result->$name = (bool)((string)$value);
+					break;
+				case "showMessage":
+					$result->$name = (string)$value;
+					break;
+				default:
+					// not relevant
+					break;
+				}
 			}
 		}
 

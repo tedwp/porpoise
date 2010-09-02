@@ -361,7 +361,26 @@ abstract class POI extends Arrayable {
 						} else if ($propertyName == "transform") {
 							$value = new POITransform($source["transform"]);
 						} else {
-							$value = $source[$propertyName];
+							switch ($propertyName) {
+							case "dimension":
+							case "type":
+							case "alt":
+							case "relativeAlt":
+								$value = (int)$source[$propertyName];
+								break;
+							case "lat":
+							case "lon":
+								$value = (float)$source[$propertyName];
+								break;
+							case "showSmallBiw":
+							case "showBiwOnClick":
+							case "doNotIndex":
+								$value = (bool)(string)$source[$propertyName];
+								break;
+							default:
+								$value = (string)$source[$propertyName];
+								break;
+							}
 						}
 						$this->$propertyName = $value;
 					}
@@ -377,7 +396,26 @@ abstract class POI extends Arrayable {
 						} else if ($propertyName == "transform") {
 							$value = new POITransform($source->transform);
 						} else {
-							$value = $source->$propertyName;
+							switch ($propertyName) {
+							case "dimension":
+							case "type":
+							case "alt":
+							case "relativeAlt":
+								$value = (int)$source->$propertyName;
+								break;
+							case "lat":
+							case "lon":
+								$value = (float)$source->$propertyName;
+								break;
+							case "showSmallBiw":
+							case "showBiwOnClick":
+							case "doNotIndex":
+								$value = (bool)(string)$source->$propertyName;
+								break;
+							default:
+								$value = (string)$source->$propertyName;
+								break;
+							}
 						}
 						$this->$propertyName = $value;
 					}
