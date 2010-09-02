@@ -21,13 +21,9 @@ class Layer {
 	/** @var int number of POIs returned per page */
 	const POIS_PER_PAGE = 10;
 
-	/** @var bool verify hash or not? */
-	/** @todo add timeout validation to hash validation */
-	const VERIFY_HASH = TRUE;
-
-	/** @var string developer ID */
+	/** @var string DEPRECATED developer ID */
 	public $developerId;
-	/** @var string developer key for hash verification */
+	/** @var string DEPRECATED developer key for hash verification */
 	public $developerKey;
 	/** @var string layer name */
 	public $layerName;
@@ -268,21 +264,6 @@ class Layer {
 	 */
 	public function getNextPageKey() {
 		return $this->response->nextPageKey;
-	}
-
-	/**
-	 * Verify a supplied hash
-	 *
-	 * Check can be disabled by setting Layer::VERIFY_HASH to FALSE
-	 *
-	 * @return bool
-	 */
-	public function isValidHash($hash, $timestamp) {
-		if (!self::VERIFY_HASH) {
-			return TRUE;
-		}
-		$goodHash = sha1($this->developerKey . $timestamp);
-		return $hash == $goodHash;
 	}
 }
 

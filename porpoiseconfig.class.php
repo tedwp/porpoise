@@ -23,10 +23,10 @@ class PorPOISeConfig {
 	/** @var string Source file of configuration */
 	protected $source;
 
-	/** @var string Developer key */
-	public $developerKey;
-	/** @var int Developer ID */
-	public $developerID;
+	/** @var string DEPRECATED Developer key */
+	public $developerKey = "";
+	/** @var int DEPRECATED Developer ID */
+	public $developerID = "";
 	/** @var LayerDefinition[] Layers */
 	public $layerDefinitions;
 	/** @var string[] POI connectors */
@@ -59,8 +59,12 @@ class PorPOISeConfig {
 		$this->source = $source;
 
 		$config = new SimpleXMLElement($this->source, 0, !$fromString);
-		$this->developerID = (string)$config->{"developer-id"};
-		$this->developerKey = (string)$config->{"developer-key"};
+		if (!empty($config->{"developer-id"})) {
+			$this->developerID = (string)$config->{"developer-id"};
+		}
+		if (!empty($config->{"developer-key"})) {
+			$this->developerKey = (string)$config->{"developer-key"};
+		}
 
 		/* load the names of connector classes and which files they are in */
 		foreach ($config->xpath("connectors/connector") as $node) {

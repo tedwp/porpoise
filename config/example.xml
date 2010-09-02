@@ -4,7 +4,7 @@
 <refreshInterval/>
 <refreshDistance/>
 <fullRefresh/>
-<responseMessage/>
+<showMessage/>
 <action>
 <contentType/>
 <method/>

@@ -42,7 +42,7 @@ class LayarPOIServer {
 	// layers in this server
 	protected $layers = array();
 
-	protected $requiredRequestFields = array("userId", "developerId", "developerHash", "timestamp", "layerName", "lat", "lon");
+	protected $requiredRequestFields = array("userId", "timestamp", "layerName", "lat", "lon");
 	protected $optionalRequestFields = array("accuracy", "RADIOLIST", "SEARCHBOX_1", "SEARCHBOX_2", "SEARCHBOX_3", "CUSTOM_SLIDER_1", "CUSTOM_SLIDER_2", "CUSTOM_SLIDER_3", "pageKey", "oath_consumer_key", "oauth_signature_method", "oauth_timestamp", "oauth_nonce", "oauth_version", "oauth_signature", "radius", "alt");
 	protected $optionalPOIFieldsDefaults = array(
 		"inFocus" => FALSE,
@@ -57,7 +57,7 @@ class LayarPOIServer {
 		"refreshDistance" => 100,
 		"fullRefresh" => TRUE,
 		"actions" => array(),
-		"responseMessage" => NULL,
+		"showMessage" => NULL,
 		"deletedHotspots" => array()
 	);
 	protected $optionalActionFieldsDefaults = array(
@@ -263,15 +263,6 @@ class LayarPOIServer {
 			throw new Exception(sprintf("Unknown layer: %s", $layerName));
 		}
 
-		$layer = $this->layers[$layerName];
-		if ($layer->developerId != $_REQUEST["developerId"]) {
-			throw new Exception(sprintf("Unknown developerId: %s", $_REQUEST["developerId"]));
-		}
-
-		if (!$layer->isValidHash($_REQUEST["developerHash"], $_REQUEST["timestamp"])) {
-			throw new Exception(sprintf("Invalid developer hash", $_REQUEST["developerHash"]));
-		}
-
 		if ($_REQUEST["lat"] < -90 || $_REQUEST["lat"] > 90) {
 			throw new Exception(sprintf("Invalid latitude: %s", $_REQUEST["lat"]));
 		}
@@ -299,6 +290,7 @@ class LayarPOIServer {
 			case "countryCode":
 			case "layerName":				
 			case "version":	
+			case "action":
 				$result->$key = $value;
 				break;
 			case "requestedPoiId":				
