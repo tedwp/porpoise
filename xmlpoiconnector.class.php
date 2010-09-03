@@ -93,7 +93,7 @@ class XMLPOIConnector extends POIConnector {
 					$result->$name = (bool)((string)$childNode);
 					break;
 				case "showMessage":
-					$result->$name = (string)$childNode;
+					$result->$name = utf8_decode((string)$childNode);
 					break;
 				case "action":
 					$result->actions[] = new Action($childNode);
@@ -188,7 +188,7 @@ class XMLPOIConnector extends POIConnector {
 						$value = (bool)(string)$child;
 						break;
 					default:
-						$value = (string)$child;
+						$value = utf8_decode((string)$child);
 						break;
 					}
 					$poi->$nodeName = $value;
@@ -309,7 +309,7 @@ class XMLPOIConnector extends POIConnector {
 			return $simpleXML->asXML();
 		} else {
 			// write new dataset to file
-			return $simpleXML->asXML($this->source);
+			return file_put_contents($this->source, $simpleXML->asXML()) > 0 ;
 		}
 
 		libxml_use_internal_errors($libxmlErrorHandlingState);
@@ -364,11 +364,20 @@ class XMLPOIConnector extends POIConnector {
 		$libxmlErrorHandlingState = libxml_use_internal_errors(TRUE);
 
 		$simpleXML = $this->getSimpleXMLFromSource();
+		if ($simpleXML->getName() == "pois") {
+			// older version XML file, time to fix that
+			$poisSimpleXML = $simpleXML;
+			$simpleXML = new SimpleXMLElement(self::EMPTY_DOCUMENT);
+			unset($simpleXML->pois);
+			$dom = dom_import_simplexml($simpleXML);
+			$poisDom = $dom->ownerDocument->importNode(dom_import_simplexml($poisSimpleXML), TRUE);
+			$dom->appendChild($poisDom);
+		}
     unset($simpleXML->action);
 
 		$relevantFields = array("refreshInterval", "refreshDistance", "fullRefresh", "showMessage");
 		foreach ($relevantFields as $fieldName) {
-			$simpleXML->$fieldName = $response->$fieldName;
+			$simpleXML->$fieldName = utf8_encode($response->$fieldName);
 		}
     foreach ($response->actions as $action) {
       if (empty($simpleXML->action)) {
@@ -381,7 +390,7 @@ class XMLPOIConnector extends POIConnector {
 				if ($actionField == "params") {
 					$simpleXML->action[$i]->$actionField = implode(",", $action->$actionField);
 				} else {
-	        $simpleXML->action[$i]->$actionField = $action->$actionField;
+	        $simpleXML->action[$i]->$actionField = utf8_encode($action->$actionField);
 				}
       }
     }
@@ -391,7 +400,7 @@ class XMLPOIConnector extends POIConnector {
 		if ($asString) {
 			return $simpleXML->asXML();
 		} else {
-			return $simpleXML->asXML($this->source);
+			return file_put_contents($this->source, $simpleXML->asXML()) > 0;
 		}
 	}
 
@@ -443,21 +452,24 @@ class XMLPOIConnector extends POIConnector {
 				foreach ($value as $action) {
 					$actionElement = $poiElement->addChild("action");
 					foreach ($action as $actionName => $actionValue) {
-						$actionElement->addChild($actionName, str_replace("&", "&amp;", $actionValue));
+						if ($actionName == "params") {
+							$actionValue = implode(",", $actionValue);
+						}
+						$actionElement->addChild($actionName, utf8_encode(str_replace("&", "&amp;", $actionValue)));
 					}
 				}
 			} else if ($key == "transform") {
 				$transformElement = $poiElement->addChild("transform");
 				foreach(array("rel", "angle", "scale") as $elementName) {
-					$transformElement->addChild($elementName, str_replace("&", "&amp;", $poi->transform->$elementName));
+					$transformElement->addChild($elementName, utf8_encode(str_replace("&", "&amp;", $poi->transform->$elementName)));
 				}
 			} else if ($key == "object") {
 				$objectElement = $poiElement->addChild("object");
 				foreach(array("baseURL", "full", "reduced", "icon", "size") as $elementName) {
-					$objectElement->addChild($elementName, str_replace("&", "&amp;", $poi->object->$elementName));
+					$objectElement->addChild($elementName, utf8_encode(str_replace("&", "&amp;", $poi->object->$elementName)));
 				}
 			} else {
-				$poiElement->addChild($key, str_replace("&", "&amp;", $value));
+				$poiElement->addChild($key, utf8_encode(str_replace("&", "&amp;", $value)));
 			}
 		}
 		return $poiElement;
