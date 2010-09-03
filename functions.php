@@ -103,3 +103,24 @@ function stripslashes_array(&$ar) {
 		}
 	}
 }
+
+/**
+ * Recursively utf8_encodes all the strings in an array
+ *
+ * @param array $ar
+ *
+ * @return array
+ */
+function utf8_encode_recursive($ar) {
+	$result = array();
+	foreach ($ar as $key => $el) {
+		if (is_array($el)) {
+			$result[$key] = utf8_encode_recursive($el);
+		} else if (is_string($el)) {
+			$result[$key] = utf8_encode($el);
+		} else {
+			$result[$key] = $el;
+		}
+	}
+	return $result;
+}
