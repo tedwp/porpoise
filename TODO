@@ -1,11 +1,8 @@
 scratch sheet for ToDo's
 
-1.0
+1.1
 / implement bounding boxing and test performance (and function)
  \-> don't forget wraparound at (-)180 degrees
-- entering special characters in Dashboard kills XML files
-
-1.1
 - multiple layers in one database
   - POIConnector::getLayerProperties() method
 - centralize forced casting logic

@@ -1,25 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <layer>
 
-<refreshInterval/>
-<refreshDistance/>
-<fullRefresh/>
-<showMessage/>
-<action>
-<contentType/>
-<method/>
-<activityType/>
-<uri/>
-<label/>
-<params/>
-<showActivity/>
-<activityMessage/>
-</action>
-
 <pois>
-
-
-
 
 <poi>
 <dimension>1</dimension>
