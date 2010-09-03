@@ -135,7 +135,13 @@ class Action extends Arrayable {
 			}
 		} else {
 			$this->label = (string)$source->label;
+			if (mb_detect_encoding($this->label, "UTF-8") == "UTF-8") {
+				$this->label = utf8_decode($this->label);
+			}
 			$this->uri = (string)$source->uri;
+			if (mb_detect_encoding($this->uri, "UTF-8") == "UTF-8") {
+				$this->uri = utf8_decode($this->uri);
+			}
 			foreach ($optionalFields as $field) {
 				if (isset($source->$field)) {
 					switch($field) {
@@ -154,6 +160,9 @@ class Action extends Arrayable {
 						break;
 					default:
 						$this->$field = (string)$source->$field;
+						if (mb_detect_encoding($this->$field, "UTF-8") == "UTF-8") {
+							$this->$field = utf8_decode($this->$field);
+						}
 						break;
 					}
 				}
@@ -279,15 +288,24 @@ class POIObject extends Arrayable {
 			}
 			$this->size = (float)$source["size"];
 		} else {
-			$this->baseURL = (string)$source->baseURL;
-			$this->full = (string)$source->full;
-			if (!empty($source->reduced)) {
-				$this->reduced = (string)$source->reduced;
+			foreach (array("baseURL", "full", "reduced", "icon", "size") as $fieldName) {
+				switch ($fieldName) {
+				case "baseURL":
+				case "full":
+				case "reduced":
+				case "icon":
+					if (empty($source->$fieldName)) {
+						break;
+					}
+					$this->$fieldName = (string)$source->$fieldName;
+					if (mb_detect_encoding($this->$fieldName, "UTF-8") == "UTF-8") {
+						$this->$field = utf8_decode($this->$fieldName);
+					}
+					break;
+				case "size":
+					$this->size = (float)$source->size;
+				}
 			}
-			if (!empty($source->icon)) {
-				$this->icon = (string)$source->icon;
-			}
-			$this->size = (float)$source->size;
 		}
 	}
 }
