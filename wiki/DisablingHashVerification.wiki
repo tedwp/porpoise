@@ -8,4 +8,4 @@ To do this, open the file `layer.class.php`. Near the top you will find a line t
 }}}
 Replace `TRUE` by `FALSE`, save the file and you are good to go.
 
-Note: this instruction only applies to PorPOISe versions up to 0.71. PorPOISe 1.0 and up do not do hash verification any more.
+Note: this instruction only applies to PorPOISe versions up to 1.0rc1. PorPOISe 1.0 and up do not do hash verification any more.
