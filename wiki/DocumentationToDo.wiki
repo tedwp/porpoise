@@ -4,4 +4,4 @@
 
 These are short notes on things that need to be altered in the documentation but nobody has gotten around to fixing yet.
 
-  * remove the security issues remark from InstallationInstructions. Layar has stopped using developer Id and developer key so they can go from the config file which makes that the config file does not contain sensitive information anymore
+  * remove the security issues remark from InstallationInstructions. Layar has stopped using developer Id and developer key so they can go from the config file which makes that the config file does not contain sensitive information anymore by default. If you store other sensitive data (such as database password), you will still need to move your config file to a secure location of course
