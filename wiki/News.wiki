@@ -2,6 +2,7 @@
 #labels Featured
 
 =News=
+  * December 12, 2010: Released version 1.0a which includes some bug fixes for UTF-8 XML content and removes `timestamp` from the list of required parameters which caused problems with newer layers where timestamp wasn't included in the request anymore.
   * September 3, 2010: Released PorPOISe 1.0 today! This version is fully compatible with the upcoming Layar version 4.0. It is also better structured to make upgrading in the future easier and contains some performance optimalizations, including response caching and leaving out unnecessary parameters when their value is equal to the default Layar expects. Please read CHANGELOG, UPGRADING, INSTALL and README for all the details.
   * August 17, 2010: Released first beta version of PorPOISe 1.0. Check the CHANGELOG, UPGRADING, INSTALL and README files to see what all has changed.
   * January 18, 2010: Released PorPOISe 0.7. In this release, the `POICollector` framework has been rewritten. `POICollectors` are now called `POIConnectors` and it is easier to extend them to create your own filters. See the wiki item [Filters] for more info. This release also adds the first support for authenticated layers and integration with third party services that support OAuth, such as Twitter. Take a look at `web-app.class.php` if you want to know more.
