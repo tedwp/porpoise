@@ -2,6 +2,7 @@
 #labels Featured
 
 =News=
+  * March 10, 2010: Released version 1.1, now with support for animations! This release also has cleaner support for UTF-8 input/output in the dashboard. If you edit XML by hand and use "special" (i.e. letters with diacritics or other characters that are not in the ASCII character set), make sure that your editor saves the XML as UTF-8.
   * December 12, 2010: Released version 1.0a which includes some bug fixes for UTF-8 XML content and removes `timestamp` from the list of required parameters which caused problems with newer layers where timestamp wasn't included in the request anymore.
   * September 3, 2010: Released PorPOISe 1.0 today! This version is fully compatible with the upcoming Layar version 4.0. It is also better structured to make upgrading in the future easier and contains some performance optimalizations, including response caching and leaving out unnecessary parameters when their value is equal to the default Layar expects. Please read CHANGELOG, UPGRADING, INSTALL and README for all the details.
   * August 17, 2010: Released first beta version of PorPOISe 1.0. Check the CHANGELOG, UPGRADING, INSTALL and README files to see what all has changed.
