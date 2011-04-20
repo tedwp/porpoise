@@ -1,0 +1,16 @@
+= README directory layers
+
+Put the configuration file and layer specific files in this directory. Then,
+move this directory outside the PorPOISe directory, so you can keep
+configuration and layer specific files separate from the PorPOISe source
+distribution. Adjust the constant PORPOISE_CONFIG_PATH in config.php in the
+PorPOISe root directory to point to this directory and your install is
+complete.
+
+Files to put here:
+- config.xml - PorPOISe configuration
+- POI filter subclasses (POIConnectors)
+- WebApp subclasses
+- WebApp templates
+- XML poi files
+- XSL files for XML transformations
