@@ -24,7 +24,7 @@ password.
 Open "http://yourhost/yourdirectory/porpoise.php" and check that you get
 JSON output telling you that the parameter "userId" is missing. If you see
 this, PorPOISe works. If you get a 404 error, check your paths. If you get a
-403 error, check your file permissions.
+403 error, check your file permissions. Note: your browser may want to save the JSON output as a file to disk rather than open it directly. If you save the file, open it in a text editor and then see JSON, everything is good.
 
 You are now set up to create layers. The README file has more details on creating layers in the config file.
 
