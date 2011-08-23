@@ -1,7 +1,8 @@
-#summary Overview of newsworthy occurences regarding PorPOISe and Layar
+#summary Overview of newsworthy occurrences regarding PorPOISe
 #labels Featured
 
 =News=
+  * August 23, 2011: It's been quiet on the news page, but this is an announcement that work is being done on a PorPOISe update to support the upcoming Layar 6.0 version (Layar Vision). When is still a bit misty as it depends on available time, but we can confirm that it well be available, probably somewhere in September.
   * May 19, 2011: Release of version 1.1b. This release (together with 1.1a) consists of minor bug fixes for the stuff introduced in 1.1, together with a special behavior compensating a scaling bug in Layar 5.0.2 for iPhone
   * March 10, 2011: Released version 1.1, now with support for animations! This release also has cleaner support for UTF-8 input/output in the dashboard. If you edit XML by hand and use "special" (i.e. letters with diacritics or other characters that are not in the ASCII character set), make sure that your editor saves the XML as UTF-8.
   * December 12, 2010: Released version 1.0a which includes some bug fixes for UTF-8 XML content and removes `timestamp` from the list of required parameters which caused problems with newer layers where timestamp wasn't included in the request anymore.
